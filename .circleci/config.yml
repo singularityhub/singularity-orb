@@ -42,7 +42,7 @@ jobs:
     executor: singularity/docker
     steps:
       - checkout
-      - singularity/build-image:
+      - singularity/build-image-docker:
           image: busybox.sif
           from-uri: docker://busybox
 

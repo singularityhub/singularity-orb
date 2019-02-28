@@ -44,18 +44,12 @@ jobs:
 
 
   test-orb-commands:
-    executor: cli
     steps:
       - checkout
       - singularity/build_container:
           singularity-version: 3.1.0
           image: busybox.sif
           from-uri: docker://busybox
-
-
-    executor: cli
-    steps:
-      - checkout
       - singularity/build_container_docker:
           singularity-version: 3.1-slim
           image: busybox.sif

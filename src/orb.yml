@@ -103,6 +103,7 @@ commands:
                                      pkg-config
 
             # Install GoLang
+            $SUDO mkdir -p /usr/local/go && $SUDO chmod -R o+w /usr/local/go
             wget https://dl.google.com/go/go<< parameters.go-version >>.src.tar.gz && \
             tar -C /usr/local -xzf go<< parameters.go-version >>.src.tar.gz
             export PATH=$PATH:/usr/local/go/bin && \

@@ -206,7 +206,7 @@ jobs:
       - run:
           name: Check Singularity Version
           singularity-version: <<parameters.singularity-version>>
-          command: docker exec singularityware/singularity:<<parameters.singularity-version>> singularity --version
+          command: singularity --version
 
   build_container:
     description: Build a Singularity Container

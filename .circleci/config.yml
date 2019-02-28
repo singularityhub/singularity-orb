@@ -2,6 +2,9 @@
 
 version: 2.1
 
+orbs:
+  singularity: singularity/singularity@dev:alpha
+
 executors:
   cli:
     resource_class: small

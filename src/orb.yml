@@ -90,19 +90,15 @@ commands:
       - run:
           name: Install Singularity (Version 3.* and up)
           command: |
-            # The trick below is taken from circleci/gcp-cli, thanks!
-            # Set sudo to work whether logged in as root user or non-root user
-            if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-            $SUDO apt-get update
-            $SUDO sed -i -e 's/^Defaults\tsecure_path.*$//' /etc/sudoers
-            $SUDO apt-get install -y build-essential \
-                                     squashfs-tools \
-                                     libtool \
-                                     uuid-dev \
-                                     libssl-dev \
-                                     libgpgme11-dev \
-                                     libseccomp-dev \
-                                     pkg-config
+            sed -i -e 's/^Defaults\tsecure_path.*$//' /etc/sudoers
+            apt-get update && apt-get install -y build-essential \
+                                                 squashfs-tools \
+                                                 libtool \
+                                                 uuid-dev \
+                                                 libssl-dev \
+                                                 libgpgme11-dev \
+                                                 libseccomp-dev \
+                                                 pkg-config
             export GOPATH=/go
             go get -u github.com/golang/dep/cmd/dep
             mkdir -p ${GOPATH}/src/github.com/sylabs
@@ -125,7 +121,7 @@ commands:
             # The trick below is taken from circleci/gcp-cli, thanks!
             # Set sudo to work whether logged in as root user or non-root user
             if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-            $SUDO apt-get update && apt-get -y install git \
+            $SUDO apt-get update && $SUDO apt-get -y install git \
                    build-essential \
                    libtool \
                    squashfs-tools \

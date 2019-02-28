@@ -160,8 +160,7 @@ commands:
       - run:
           name: Build Singularity Container
           command: |
-              if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-              docker exec --volume $PWD/:/data singularityware/singularity:<<parameters.singularity-version>> singularity build /data/<<parameters.image>> <<parameters.from-uri>>
+              singularity build <<parameters.image>> <<parameters.from-uri>>
 
   inspect-image:
     description: Inspect a Singularity Container
@@ -177,25 +176,6 @@ commands:
             if [ -e "<< parameters.image >>" ]; then
                 singularity inspect << parameters.image >>
             fi
-
-  inspect-image-docker:
-    description: Inspect a Singularity Container
-    parameters:
-      singularity-version:
-        type: string
-        default: "3.1-slim"
-      image:
-        description: The image binary to inspect (e.g., container.sif)
-        type: string
-        default: container.sif
-    steps:
-      - run:
-          name: Inspect Singularity Container
-          command: |
-            if [ -e "<< parameters.image >>" ]; then
-                docker exec --volume $PWD/:/data singularityware/singularity:<<parameters.singularity-version>> singularity inspect << parameters.image >>
-            fi
-
 
 jobs:
   install_cli:
@@ -264,5 +244,5 @@ jobs:
       - build-image-docker:
           from-uri: <<parameters.from-uri>>
           image: <<parameters.image>>
-      - inspect-image-docker:
+      - inspect-image:
           image: <<parameters.image>>

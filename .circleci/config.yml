@@ -36,7 +36,7 @@ jobs:
     executor: singularity/default
     steps:
       - checkout
-      - build-image:
+      - singularity/build-image:
           singularity-version: 3.1.0
           image: busybox.sif
           from-uri: docker://busybox
@@ -45,7 +45,7 @@ jobs:
     executor: singularity/docker
     steps:
       - checkout
-      - build-image-docker:
+      - singularity/build-image-docker:
           singularity-version: 3.1-slim
           image: busybox.sif
           from-uri: docker://busybox

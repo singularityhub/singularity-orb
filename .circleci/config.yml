@@ -38,6 +38,16 @@ jobs:
           image: busybox.sif
           from-uri: docker://busybox
 
+  test-orb-commands-version-2:
+    executor: singularity/machine
+    steps:
+      - checkout
+      - singularity/install-version-2:
+          singularity-version: 2.6.1
+      - singularity/build-image:
+          image: busybox.sif
+          from-uri: docker://busybox
+
   test-orb-commands-docker:
     executor: singularity/docker
     steps:
@@ -79,6 +89,11 @@ workflows:
             - validate
 
       - test-orb-commands-docker:
+          requires:
+            - validate
+
+
+      - test-orb-commands-version-2:
           requires:
             - validate
 

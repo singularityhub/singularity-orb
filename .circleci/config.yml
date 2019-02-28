@@ -30,6 +30,7 @@ jobs:
       - run: circleci orb validate src/@orb.yml
 
   test-orb-commands:
+    executor: cli
     steps:
       - checkout
       - singularity/build_container:

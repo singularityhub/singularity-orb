@@ -29,6 +29,18 @@ jobs:
       - checkout
       - run: circleci orb validate src/@orb.yml
 
+  test-orb-commands:
+    steps:
+      - checkout
+      - singularity/build_container:
+          singularity-version: 3.1.0
+          image: busybox.sif
+          from-uri: docker://busybox
+      - singularity/build_container_docker:
+          singularity-version: 3.1-slim
+          image: busybox.sif
+          from-uri: docker://busybox
+
   publish-dev:
     executor: cli
     steps:
@@ -41,19 +53,6 @@ jobs:
             circleci orb publish src/@orb.yml singularity/singularity@dev:alpha --token $CIRCLE_TOKEN
             circleci orb publish src/@orb.yml singularity/singularity@dev:$CIRCLE_BRANCH-${CIRCLE_SHA1:0:7} --token $CIRCLE_TOKEN
             circleci orb publish src/@orb.yml singularity/singularity@dev:${CIRCLE_SHA1:0:7} --token $CIRCLE_TOKEN
-
-
-  test-orb-commands:
-    steps:
-      - checkout
-      - singularity/build_container:
-          singularity-version: 3.1.0
-          image: busybox.sif
-          from-uri: docker://busybox
-      - singularity/build_container_docker:
-          singularity-version: 3.1-slim
-          image: busybox.sif
-          from-uri: docker://busybox
 
   dev-promote-prod:
     executor: cli
@@ -70,7 +69,11 @@ workflows:
           requires:
             - lint
 
-      - publish-dev:
+      - test-orb-commands:
           requires:
             - validate
+
+      - publish-dev:
+          requires:
+            - test-orb-commands
           context: orb-publishing

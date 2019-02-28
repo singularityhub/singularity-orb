@@ -91,7 +91,7 @@ commands:
             # The trick below is taken from circleci/gcp-cli, thanks!
             # Set sudo to work whether logged in as root user or non-root user
             if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-            $SUDO apt-get update && $SUDO apt-get install -y wget git jq 
+            $SUDO apt-get update && $SUDO apt-get install -y wget git jq
             $SUDO sed -i -e 's/^Defaults\tsecure_path.*$//' /etc/sudoers
             $SUDO apt-get install -y build-essential \
                                      squashfs-tools \
@@ -102,9 +102,9 @@ commands:
                                      libseccomp-dev \
                                      pkg-config
 
-            # Install GoLang 
+            # Install GoLang
             wget https://dl.google.com/go/go<< parameters.go-version >>.src.tar.gz && \
-            tar -C /usr/local -xzf go<< parameters.go-version >>.src.tar.gz 
+            tar -C /usr/local -xzf go<< parameters.go-version >>.src.tar.gz
             export PATH=$PATH:/usr/local/go/bin && \
             $SUDO mkdir -p /go && \
             $SUDO chmod -R 7777 /go
@@ -137,7 +137,7 @@ commands:
     steps:
       - run:
           name: Build Singularity Container
-          command: | 
+          command: |
               if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
               $SUDO singularity build <<parameters.image>> <<parameters.from-uri>>
 
@@ -158,12 +158,12 @@ commands:
     steps:
       - run:
           name: Build Singularity Container
-          command: | 
+          command: |
               if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
               docker exec --volume $PWD/:/data singularityware/singularity:<<parameters.singularity-version>> singularity build /data/<<parameters.image>> <<parameters.from-uri>>
 
   inspect-image:
-    description:  Inspect a Singularity Container
+    description: Inspect a Singularity Container
     parameters:
       image:
         description: The image binary to inspect (e.g., container.sif)
@@ -178,7 +178,7 @@ commands:
             fi
 
   inspect-image-docker:
-    description:  Inspect a Singularity Container
+    description: Inspect a Singularity Container
     parameters:
       singularity-version:
         type: string

@@ -44,7 +44,7 @@ jobs:
 
 
   test-orb-commands:
-    executor: singularity/default
+    executor: cli
     steps:
       - checkout
       - singularity/build_container:
@@ -53,7 +53,7 @@ jobs:
           from-uri: docker://busybox
 
 
-    executor: singularity/docker
+    executor: cli
     steps:
       - checkout
       - singularity/build_container_docker:

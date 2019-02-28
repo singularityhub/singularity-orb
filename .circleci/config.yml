@@ -1,0 +1,83 @@
+# CircleCI build config to test the Google Cloud Platform Container Registry Orb published by CircleCI
+
+version: 2.1
+
+orbs:
+  singularity: singularity/singularity@dev:alpha
+
+executors:
+  cli:
+    resource_class: small
+    docker:
+      - image: circleci/circleci-cli
+  lint-condo:
+    resource_class: small
+    docker:
+      - image: singapore/lint-condo
+  node:
+    resource_class: small
+    docker:
+      - image: circleci/node
+
+jobs:
+  lint:
+    executor: lint-condo
+    steps:
+      - checkout
+      - run: yamllint .
+
+  validate:
+    executor: cli
+    steps:
+      - checkout
+      - run: circleci orb validate src/@orb.yml
+
+  publish-dev:
+    executor: cli
+    steps:
+      - checkout
+
+      - run:
+          name: publish dev versions
+          command: |
+            # for integration testing
+            circleci orb publish src/@orb.yml singularity/singularity@dev:alpha --token $CIRCLE_TOKEN
+            circleci orb publish src/@orb.yml singularity/singularity@dev:$CIRCLE_BRANCH-${CIRCLE_SHA1:0:7} --token $CIRCLE_TOKEN
+            circleci orb publish src/@orb.yml singularity/singularity@dev:${CIRCLE_SHA1:0:7} --token $CIRCLE_TOKEN
+
+
+  test-orb-commands:
+    executor: singularity/default
+    steps:
+      # test orb commands
+      - checkout
+      - gcp-gcr/gcr-auth
+      - gcp-gcr/build-image:
+          registry-url: us.gcr.io
+          image: sample-image
+          tag: ${CIRCLE_SHA1:0:7}.$CIRCLE_BUILD_NUMBER
+          path-to-dockerfile: .
+      - gcp-gcr/push-image:
+          registry-url: us.gcr.io
+          image: sample-image
+          tag: ${CIRCLE_SHA1:0:7}.$CIRCLE_BUILD_NUMBER
+
+  dev-promote-prod:
+    executor: cli
+    steps:
+      - checkout
+      - run: circleci orb publish promote circleci/gcp-gcr@dev:${CIRCLE_SHA1:0:7} patch --token $CIRCLE_TOKEN
+
+workflows:
+  validate_unit-test_dev-deploy:
+    jobs:
+      - lint
+
+      - validate:
+          requires:
+            - lint
+
+      - publish-dev:
+          requires:
+            - validate
+          context: orb-publishing

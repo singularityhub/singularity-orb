@@ -1,0 +1,267 @@
+version: 2.1
+
+description: >
+  An orb for interacting with Singularity containers
+
+# EXAMPLES ####################################################################
+examples:
+  simple_install:
+    description: Install Singularity Version 3* and Up
+    usage:
+      version: 2.1
+
+      orbs:
+        singularity: singularity/singularity@1.0.0
+
+      workflows:
+        install_singularity_cli:
+          executor: default
+          jobs:
+            - singularity/install_cli:
+                singularity-version: 3.1.0
+
+  docker_install:
+    description: Use Singularity via a Docker container
+    usage:
+      version: 2.1
+
+      orbs:
+        singularity: singularity/singularity@1.0.0
+
+      workflows:
+        use_docker_cli:
+          executor: docker
+          jobs:
+            - singularity/docker_cli:
+                singularity-version: 3.1-slim
+
+
+  simple_build:
+    description: Build a Singularity Container
+    usage:
+      version: 2.1
+
+      orbs:
+        singularity: singularity/singularity@1.0.0
+
+      workflows:
+        build_singularity:
+          executor: default
+          jobs:
+            - singularity/build_container:
+                singularity-version: 3.1.0
+                from-uri: docker://ubuntu
+                image: ubuntu.sif
+
+
+# EXECUTORS ####################################################################
+# These are executors, the backend bases to run on
+executors:
+  default:
+    description: >
+      A debian-based machine executor.
+    machine: true
+  docker:
+    description: >
+      Docker container base to interact with Singularity
+    parameters:
+      singularity-version:
+        type: string
+        default: "3.1-slim"
+    docker:
+      - image: singularityware/singularity:<< parameters.singularity-version >>
+
+# COMMANDS ####################################################################
+# These are commands that can be given as steps to jobs
+commands:
+  install:
+    description: |
+      Install Singularity
+    parameters:
+      singularity-version:
+        type: string
+        default: "3.1.0"
+      go-version:
+        type: string
+        default: "1.11.5"
+    steps:
+      - run:
+          name: Install GoLang
+          command: |
+            # The trick below is taken from circleci/gcp-cli, thanks!
+            # Set sudo to work whether logged in as root user or non-root user
+            if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            $SUDO apt-get update && $SUDO apt-get install -y wget git jq 
+            $SUDO sed -i -e 's/^Defaults\tsecure_path.*$//' /etc/sudoers
+            $SUDO apt-get install -y build-essential \
+                                     squashfs-tools \
+                                     libtool \
+                                     uuid-dev \
+                                     libssl-dev \
+                                     libgpgme11-dev \
+                                     libseccomp-dev \
+                                     pkg-config
+
+            # Install GoLang 
+            wget https://dl.google.com/go/go<< parameters.go-version >>.src.tar.gz && \
+            tar -C /usr/local -xzf go<< parameters.go-version >>.src.tar.gz 
+            export PATH=$PATH:/usr/local/go/bin && \
+            $SUDO mkdir -p /go && \
+            $SUDO chmod -R 7777 /go
+
+      - run:
+          name: Install Singularity
+          command: |
+            # The trick below is taken from circleci/gcp-cli, thanks!
+            # Set sudo to work whether logged in as root user or non-root user
+            if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            export GOPATH=/go
+            go get -u github.com/golang/dep/cmd/dep
+            mkdir -p ${GOPATH}/src/github.com/sylabs
+            cd ${GOPATH}/src/github.com/sylabs
+            wget https://github.com/sylabs/singularity/releases/download/v<< parameters.singularity-version >>/singularity-<< parameters.singularity-version >>.tar.gz
+            tar -xzvf singularity-<< parameters.singularity-version >>.tar.gz
+            cd singularity && ./mconfig -p /usr/local && make -C builddir && $SUDO make -C builddir install
+
+  build-image:
+    description: Build a Singularity container using default install (not Docker)
+    parameters:
+      from-uri:
+        description: The Singularity recipe path or docker:// uri to build from.
+        type: string
+        default: Singularity
+      image:
+        description: The image binary to build (e.g., container.sif)
+        type: string
+        default: container.sif
+    steps:
+      - run:
+          name: Build Singularity Container
+          command: | 
+              if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+              $SUDO singularity build <<parameters.image>> <<parameters.from-uri>>
+
+  build-image-docker:
+    description: Build a Singularity container using Docker
+    parameters:
+      singularity-version:
+        type: string
+        default: "3.1-slim"
+      from-uri:
+        description: The Singularity recipe path or docker:// uri to build from.
+        type: string
+        default: Singularity
+      image:
+        description: The image binary to build (e.g., container.sif)
+        type: string
+        default: container.sif
+    steps:
+      - run:
+          name: Build Singularity Container
+          command: | 
+              if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+              docker exec --volume $PWD/:/data singularityware/singularity:<<parameters.singularity-version>> singularity build /data/<<parameters.image>> <<parameters.from-uri>>
+
+  inspect-image:
+    description:  Inspect a Singularity Container
+    parameters:
+      image:
+        description: The image binary to inspect (e.g., container.sif)
+        type: string
+        default: container.sif
+    steps:
+      - run:
+          name: Inspect Singularity Container
+          command: |
+            if [ -e "<< parameters.image >>" ]; then
+                singularity inspect << parameters.image >>
+            fi
+
+  inspect-image-docker:
+    description:  Inspect a Singularity Container
+    parameters:
+      singularity-version:
+        type: string
+        default: "3.1-slim"
+      image:
+        description: The image binary to inspect (e.g., container.sif)
+        type: string
+        default: container.sif
+    steps:
+      - run:
+          name: Inspect Singularity Container
+          command: |
+            if [ -e "<< parameters.image >>" ]; then
+                docker exec --volume $PWD/:/data singularityware/singularity:<<parameters.singularity-version>> singularity inspect << parameters.image >>
+            fi
+
+
+jobs:
+  install_cli:
+    description: Install Singularity on the default executor.
+    executor: default
+    parameters:
+      singularity-version:
+        type: string
+        default: "3.1.0"
+      go-version:
+        type: string
+        default: "1.11.5"
+    steps:
+      - install:
+          singularity-version: <<parameters.singularity-version>>
+          go-version: <<parameters.go-version>>
+      - run: singularity --version
+
+  docker_cli:
+    description: Interact with Singularity via a Docker container
+    executor: docker
+    parameters:
+      singularity-version:
+        description: The Singularity version (tag on Docker Hub singularityware/singularity)
+        type: string
+        default: 3.1-slim
+    steps:
+      - run:
+          name: Check Singularity Version
+          singularity-version: <<parameters.singularity-version>>
+          command: docker exec singularityware/singularity:<<parameters.singularity-version>> singularity --version
+
+  build_container:
+    description: Build a Singularity Container
+    executor: default
+    parameters:
+      from-uri:
+        description: The Singularity recipe path or docker:// uri to build from.
+        type: string
+        default: Singularity
+      image:
+        description: The image binary to build (e.g., container.sif)
+        type: string
+        default: container.sif
+    steps:
+      - install
+      - build-image:
+          from-uri: <<parameters.from-uri>>
+          image: <<parameters.image>>
+      - inspect-image:
+          image: <<parameters.image>>
+
+  build_container_docker:
+    description: Build a Singularity Container
+    executor: docker
+    parameters:
+      from-uri:
+        description: The Singularity recipe path or docker:// uri to build from.
+        type: string
+        default: Singularity
+      image:
+        description: The image binary to build (e.g., container.sif)
+        type: string
+        default: container.sif
+    steps:
+      - build-image-docker:
+          from-uri: <<parameters.from-uri>>
+          image: <<parameters.image>>
+      - inspect-image-docker:
+          image: <<parameters.image>>

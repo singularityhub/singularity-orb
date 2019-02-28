@@ -10,11 +10,11 @@ Before this Orb was used / tested with CircleCI, I needed to [install](https://c
 the CircleCI client, and then validate it locally:
 
 ```bash
-circleci orb validate src/orb.yml
+$ circleci orb validate src/orb.yml
 ```
 
 and also deployed a development alpha version
 
 ```bash
-circleci orb publish src/orb.yml singularity/singularity@dev:alpha
+$ circleci orb publish src/orb.yml singularity/singularity@dev:alpha
 ```

@@ -33,13 +33,18 @@ jobs:
       - run: circleci orb validate src/@orb.yml
 
   test-orb-commands:
-    executor: cli
+    executor: singularity/default
     steps:
       - checkout
       - singularity/build_container:
           singularity-version: 3.1.0
           image: busybox.sif
           from-uri: docker://busybox
+
+  test-orb-commands-docker:
+    executor: singularity/docker
+    steps:
+      - checkout
       - singularity/build_container_docker:
           singularity-version: 3.1-slim
           image: busybox.sif
@@ -74,6 +79,10 @@ workflows:
             - lint
 
       - test-orb-commands:
+          requires:
+            - validate
+
+      - test-orb-commands-docker:
           requires:
             - validate
 

@@ -7,17 +7,13 @@ orbs:
 
 executors:
   cli:
-    resource_class: small
+    resource_class: medium
     docker:
       - image: circleci/circleci-cli
   lint-condo:
-    resource_class: small
+    resource_class: medium
     docker:
       - image: singapore/lint-condo
-  node:
-    resource_class: small
-    docker:
-      - image: circleci/node
 
 jobs:
   lint:
@@ -30,7 +26,7 @@ jobs:
     executor: cli
     steps:
       - checkout
-      - run: circleci orb validate src/@orb.yml
+      - run: circleci orb validate src/orb.yml
 
   test-orb-commands:
     executor: singularity/default

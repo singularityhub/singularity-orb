@@ -226,6 +226,9 @@ commands:
               singularity build <<parameters.image>> <<parameters.from-uri>>
 
 
+# JOBS #########################################################################
+# Jobs are combined sets of commands for the user to easily run
+
 jobs:
 
   install_alpine_docker_3:

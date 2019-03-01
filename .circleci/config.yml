@@ -28,33 +28,61 @@ jobs:
       - checkout
       - run: circleci orb validate src/orb.yml
 
-  test-orb-commands:
-    executor: singularity/default
+
+  test-install-alpine-docker-3:
+    executor: singularity/alpine-docker
     steps:
       - checkout
-      - singularity/install:
-          singularity-version: 3.1.0
-      - singularity/build-image:
-          image: busybox.sif
-          from-uri: docker://busybox
+      - singularity/install-alpine-3:
+          singularity-version: 3.1-slim
 
-  test-orb-commands-version-2:
+  test-install-debian-2:
     executor: singularity/machine
     steps:
       - checkout
-      - singularity/install-version-2:
+      - singularity/install-debian-2:
           singularity-version: 2.6.1
-      - singularity/build-image:
-          image: busybox.sif
-          from-uri: docker://busybox
 
-  test-orb-commands-docker:
+
+  test-install-debian-3:
+    executor: singularity/machine
+    steps:
+      - checkout
+      - singularity/install-debian-3:
+          singularity-version: 3.1.0
+          go-version: 1.11.5
+
+
+  test-build-docker-base:
     executor: singularity/docker
     steps:
       - checkout
       - singularity/build-image-docker:
+          singularity-version: 3.1-slim
           image: busybox.sif
           from-uri: docker://busybox
+
+  test-build-docker-custom-3:
+    executor: singularity/alpine-docker
+    steps:
+      - checkout
+      - install-go:
+          go-version: 11.1.5
+      - alpine-install-3:
+          singularity-version: 3.1.0
+      - build-image-docker:
+          from-uri: docker://busybox
+          image: busybox.sif
+
+  test-build-custom-2:
+    executor: singularity/machine
+    steps:
+      - checkout
+      - debian-install-2:
+          singularity-version: 2.6.1
+      - build-image-docker:
+          from-uri: docker://busybox
+          image: busybox.sif
 
   publish-dev:
     executor: cli
@@ -92,29 +120,47 @@ workflows:
           requires:
             - lint
 
-      - test-orb-commands:
+      - test-install-alpine-docker-3:
           requires:
             - validate
 
-      - test-orb-commands-docker:
+      - test-install-debian-2:
           requires:
             - validate
 
-      - test-orb-commands-version-2:
+      - test-install-debian-3:
+          requires:
+            - validate
+
+      - test-build-docker-base:
+          requires:
+            - validate
+
+      - test-build-docker-custom-3:
+          requires:
+            - validate
+
+      - test-build-custom-2:
           requires:
             - validate
 
       - publish-dev:
           requires:
-            - test-orb-commands
-            - test-orb-commands-docker
-            - test-orb-commands-version-2
+            - test-install-alpine-docker-3
+            - test-install-debian-2
+            - test-install-debian-3
+            - test-build-docker-base
+            - test-build-docker-custom-3
+            - test-build-custom-2
 
       - publish:
           requires:
-            - test-orb-commands
-            - test-orb-commands-docker
-            - test-orb-commands-version-2
+            - test-install-alpine-docker-3
+            - test-install-debian-2
+            - test-install-debian-3
+            - test-build-docker-base
+            - test-build-docker-custom-3
+            - test-build-custom-2
           filters:
              branches:
                only:

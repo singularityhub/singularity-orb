@@ -5,6 +5,7 @@ description: >
 
 # EXAMPLES ####################################################################
 examples:
+
   simple_install:
     description: Install Singularity Version 3* and Up
     usage:
@@ -15,7 +16,7 @@ examples:
 
       workflows:
         install_singularity_cli:
-          executor: default
+          executor: alpine-docker
           jobs:
             - singularity/install_cli:
                 singularity-version: 3.1.0
@@ -46,7 +47,7 @@ examples:
 
       workflows:
         build_singularity:
-          executor: default
+          executor: alpine-docker
           jobs:
             - singularity/build_container:
                 singularity-version: 3.1.0
@@ -56,12 +57,13 @@ examples:
 
 # EXECUTORS ####################################################################
 # These are executors, the backend bases to run on
+
 executors:
   machine:
     description: >
       A debian-based machine executor.
     machine: true
-  default:
+  alpine-docker:
     description: >
       An alpine, go-lang base image that can have a custom Singularity install
     docker:
@@ -79,16 +81,69 @@ executors:
 # COMMANDS ####################################################################
 # These are commands that can be given as steps to jobs
 commands:
-  install:
+
+  install-go:
     description: |
-      Install Singularity
+      Install GoLang to /tmp
+    parameters:
+      go-version:
+        type: string
+        default: "11.1.5"
+    steps:
+      - run:
+          name:
+          command: |
+            if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            cd /tmp
+            wget https://dl.google.com/go/go<< paramters.go-version >>.linux-amd64.tar.gz
+            tar -xzf go<< paramters.go-version >>.linux-amd64.tar.gz
+            export PATH=/tmp/go/bin:$PATH
+                $SUDO mkdir -p /go
+                $SUDO chmod -R 7777 /go
+            which go
+            export GOPATH=/go
+
+  debian-install-3:
+    description: Install Singularity 3.* on Debian
     parameters:
       singularity-version:
         type: string
         default: "3.1.0"
     steps:
       - run:
-          name: Install Singularity (Version 3.* and up)
+          name: install Singularity 3.*
+          command: |
+            if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            $SUDO apt-get install -y build-essential \
+                                     squashfs-tools \
+                                     libtool \
+                                     uuid-dev \
+                                     libssl-dev \
+                                     libgpgme11-dev \
+                                     libseccomp-dev \
+                                     pkg-config
+
+            export GOPATH=/go
+            go get -u github.com/golang/dep/cmd/dep && \
+            mkdir -p ${GOPATH}/src/github.com/sylabs && \
+            cd ${GOPATH}/src/github.com/sylabs && \
+            wget https://github.com/sylabs/singularity/releases/download/v3.1.0/singularity-3.1.0.tar.gz && \
+            tar -xzvf singularity-3.1.0.tar.gz && \
+            cd singularity && \
+            ./mconfig -p /usr/local && \
+            make -C builddir && \
+            $SUDO make -C builddir install
+
+  alpine-install-3:
+    description: |
+      Install a custom version of Singularity with apk
+    parameters:
+      singularity-version:
+        type: string
+        default: "3.1.0"
+    steps:
+      - run:
+          name: Install Singularity (Version 3.* and up) in the Docker container
           command: |
             apk update && \
             apk add --virtual automake build-base linux-headers libffi-dev
@@ -102,9 +157,10 @@ commands:
             tar -xzvf singularity-<< parameters.singularity-version >>.tar.gz
             cd singularity && ./mconfig -p /usr/local && make -C builddir && $SUDO make -C builddir install
 
-  install-version-2:
+
+  debian-install-2:
     description: |
-      Install Singularity Versions 2.*
+      Install Singularity Versions 2.* on a debian base
     parameters:
       singularity-version:
         type: string
@@ -114,7 +170,6 @@ commands:
           name: Install Singularity (pre GoLang)
           command: |
             # The trick below is taken from circleci/gcp-cli, thanks!
-            # Set sudo to work whether logged in as root user or non-root user
             if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
             $SUDO apt-get update && $SUDO apt-get -y install git \
                    build-essential \
@@ -134,7 +189,7 @@ commands:
             cd singularity-<< parameters.singularity-version >> && ./autogen.sh && ./configure --prefix=/usr/local && make && $SUDO make install
 
   build-image:
-    description: Build a Singularity container using default install (not Docker)
+    description: Build a Singularity container using default (not Docker)
     parameters:
       from-uri:
         description: The Singularity recipe path or docker:// uri to build from.
@@ -173,20 +228,62 @@ commands:
 
 
 jobs:
-  install_cli:
-    description: Install Singularity on the default executor.
-    executor: default
+
+  install_alpine_docker_3:
+    description: |
+      Install Singularity 3.* on the an alpine Docker base (comes with goLang)
+      This combination will build quickly (we use an alpine base that comes with
+      GoLang) but is more limited in functionality due to being in a container.
+    executor: alpine-docker
     parameters:
       singularity-version:
         type: string
         default: "3.1.0"
     steps:
-      - install:
+      - alpine-install-3:
+          singularity-version: <<parameters.singularity-version>>
+      - run: singularity --version
+
+  install_debian_2:
+    description: |
+      Install Singularity 2.* on a debian base. We don't need GoLang for
+      Singularity under 2.6.1, so this install is not as complicated. We
+      can easily install on the debian machine without a Docker container.
+    executor: machine
+    parameters:
+      singularity-version:
+        type: string
+        default: "3.1.0"
+    steps:
+      - debian-install-2:
+          singularity-version: <<parameters.singularity-version>>
+      - run: singularity --version
+
+  install_debian_3:
+    description: |
+      Install Singularity 3.* on a debian base. We must first install GoLang.
+      This is slower than using a pre-built container base, but gives us a native
+      install with more functionality.
+    executor: machine
+    parameters:
+      singularity-version:
+        type: string
+        default: "3.1.0"
+      go-version:
+        type: string
+        default: "11.1.5"
+    steps:
+      - install-go:
+          go-version: <<parameters.go-version>>
+      - debian-install-3:
           singularity-version: <<parameters.singularity-version>>
       - run: singularity --version
 
   docker_cli:
-    description: Interact with Singularity via a Docker container
+    description: |
+       Interact with Singularity via a Docker container. The containers are
+       prebuilt, so this step supports any of the tags belonging to the
+       singularityware/singularity Docker repository.
     executor: docker
     parameters:
       singularity-version:
@@ -199,44 +296,13 @@ jobs:
           singularity-version: <<parameters.singularity-version>>
           command: singularity --version
 
-  build_container:
-    description: Build a Singularity Container
-    executor: default
-    parameters:
-      from-uri:
-        description: The Singularity recipe path or docker:// uri to build from.
-        type: string
-        default: Singularity
-      image:
-        description: The image binary to build (e.g., container.sif)
-        type: string
-        default: container.sif
-    steps:
-      - install
-      - build-image:
-          from-uri: <<parameters.from-uri>>
-          image: <<parameters.image>>
-
-  build_container_version_2:
-    description: Build a Singularity Container, pre goLang versions
-    executor: machine
-    parameters:
-      from-uri:
-        description: The Singularity recipe path or docker:// uri to build from.
-        type: string
-        default: Singularity
-      image:
-        description: The image binary to build (e.g., container.sif)
-        type: string
-        default: container.sif
-    steps:
-      - install-version-2
-      - build-image:
-          from-uri: <<parameters.from-uri>>
-          image: <<parameters.image>>
-
-  build_container_docker:
-    description: Build a Singularity Container
+  build_container_docker_base:
+    description: |
+        Build a Singularity Container using a a pre-build Docker base. This is
+        the fastest build option because the container is prebuilt, but functionality
+        (interaction with the container) after is limited for the same reason.
+        This job supports any version of Singularity, and the version maps
+        to the tag of singularityware/singularity on Docker Hub.
     executor: docker
     parameters:
       from-uri:
@@ -249,5 +315,89 @@ jobs:
         default: container.sif
     steps:
       - build-image-docker:
+          from-uri: <<parameters.from-uri>>
+          image: <<parameters.image>>
+
+
+  build_container_docker_custom_3:
+    description: |
+        Build a Singularity Container using an alpine Docker base, and install
+        a custom version of GoLang and Singularity in the 3.* family.
+    executor: alpine-docker
+    parameters:
+      from-uri:
+        description: The Singularity recipe path or docker:// uri to build from.
+        type: string
+        default: Singularity
+      image:
+        description: The image binary to build (e.g., container.sif)
+        type: string
+        default: container.sif
+      go-version:
+        type: string
+        default: "11.1.5"
+      singularity-version:
+        description: The Singularity version
+        type: string
+        default: 3.1.0
+    steps:
+      - install-go:
+          go-version: <<parameters.go-version>>
+      - alpine-install-3:
+          singularity-version: <<parameters.singularity-version>>
+      - build-image:
+          from-uri: <<parameters.from-uri>>
+          image: <<parameters.image>>
+
+  build_container_custom_2:
+    description: |
+        Build a Singularity 2.* Container on a debian (machine) base. This means
+        that we install Singularity from source
+    executor: machine
+    parameters:
+      from-uri:
+        description: The Singularity recipe path or docker:// uri to build from.
+        type: string
+        default: Singularity
+      image:
+        description: The image binary to build (e.g., container.sif)
+        type: string
+        default: container.sif
+      singularity-version:
+        type: string
+        default: "3.1.0"
+    steps:
+      - debian-install-2:
+          singularity-version: <<parameters.singularity-version>> 
+      - build-image:
+          from-uri: <<parameters.from-uri>>
+          image: <<parameters.image>>
+
+  build_container_custom_3:
+    description: |
+      Build a Singularity Container version 3.* base on a debian base. This 
+      option will give you the most freedom to use the container after building. 
+    executor: machine
+    parameters:
+      from-uri:
+        description: The Singularity recipe path or docker:// uri to build from.
+        type: string
+        default: Singularity
+      image:
+        description: The image binary to build (e.g., container.sif)
+        type: string
+        default: container.sif
+      go-version:
+        type: string
+        default: "11.1.5"
+      singularity-version:
+        type: string
+        default: "3.1.0"
+    steps:
+      - install-go:
+          go-version: <<parameters.go-version>>
+      - debian-install-3:
+          singularity-version: <<parameters.singularity-version>>
+      - build-image:
           from-uri: <<parameters.from-uri>>
           image: <<parameters.image>>

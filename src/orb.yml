@@ -90,16 +90,10 @@ commands:
       - run:
           name: Install Singularity (Version 3.* and up)
           command: |
-            apt-get update && apt-get install -y build-essential \
-                                                 squashfs-tools \
-                                                 libtool \
-                                                 uuid-dev \
-                                                 libcap-dev \
-                                                 libssl-dev \
-                                                 libgpgme11-dev \
-                                                 libseccomp-dev \
-                                                 pkg-config
-            ldconfig
+            apk update && \
+            apk add --virtual automake build-base linux-headers libffi-dev
+            apk add --no-cache bash git openssh gcc squashfs-tools sudo libtool gawk
+            apk add --no-cache linux-headers build-base openssl-dev util-linux util-linux-dev
             export GOPATH=/go
             go get -u github.com/golang/dep/cmd/dep
             mkdir -p ${GOPATH}/src/github.com/sylabs

@@ -100,4 +100,3 @@ workflows:
       - publish-dev:
           requires:
             - test-orb-commands
-          context: orb-publishing

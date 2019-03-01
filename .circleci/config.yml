@@ -60,11 +60,9 @@ jobs:
     executor: cli
     steps:
       - checkout
-
       - run:
           name: publish dev versions
           command: |
-            # for integration testing
             circleci orb publish src/orb.yml singularity/singularity@dev:alpha --token $CIRCLE_TOKEN
             circleci orb publish src/orb.yml singularity/singularity@dev:$CIRCLE_BRANCH-${CIRCLE_SHA1:0:7} --token $CIRCLE_TOKEN
             circleci orb publish src/orb.yml singularity/singularity@dev:${CIRCLE_SHA1:0:7} --token $CIRCLE_TOKEN
@@ -74,6 +72,17 @@ jobs:
     steps:
       - checkout
       - run: circleci orb publish promote singularity/singularity@dev:${CIRCLE_SHA1:0:7} patch --token $CIRCLE_TOKEN
+
+  publish:
+    executor: cli
+    steps:
+      - checkout
+      - run:
+          name: publish production versions
+          command: |
+            circleci orb publish src/orb.yml singularity/singularity@1.0.0 --token $CIRCLE_TOKEN
+            circleci orb publish src/orb.yml singularity/singularity@1.0.0:$CIRCLE_BRANCH-${CIRCLE_SHA1:0:7} --token $CIRCLE_TOKEN
+            circleci orb publish src/orb.yml singularity/singularity@1.0.0:${CIRCLE_SHA1:0:7} --token $CIRCLE_TOKEN
 
 workflows:
   validate_unit-test_dev-deploy:
@@ -92,7 +101,6 @@ workflows:
           requires:
             - validate
 
-
       - test-orb-commands-version-2:
           requires:
             - validate
@@ -100,3 +108,15 @@ workflows:
       - publish-dev:
           requires:
             - test-orb-commands
+            - test-orb-commands-docker
+            - test-orb-commands-version-2
+
+      - publish:
+          requires:
+            - test-orb-commands
+            - test-orb-commands-docker
+            - test-orb-commands-version-2
+          filters:
+             branches:
+               only:
+                 - master

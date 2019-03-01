@@ -273,7 +273,7 @@ jobs:
         default: "3.1.0"
       go-version:
         type: string
-        default: "11.1.5"
+        default: "1.11.5"
     steps:
       - install-go:
           go-version: <<parameters.go-version>>
@@ -391,7 +391,7 @@ jobs:
         default: container.sif
       go-version:
         type: string
-        default: "11.1.5"
+        default: "1.11.5"
       singularity-version:
         type: string
         default: "3.1.0"

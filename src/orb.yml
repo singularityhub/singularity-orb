@@ -94,6 +94,7 @@ commands:
                                                  squashfs-tools \
                                                  libtool \
                                                  uuid-dev \
+                                                 libcap-dev \
                                                  libssl-dev \
                                                  libgpgme11-dev \
                                                  libseccomp-dev \
@@ -135,7 +136,7 @@ commands:
                    python3-dev
             wget https://github.com/sylabs/singularity/releases/download/<< parameters.singularity-version >>/singularity-<< parameters.singularity-version >>.tar.gz
             tar -xzvf singularity-<< parameters.singularity-version >>.tar.gz
-            cd singularity && ./autogen.sh && ./configure --prefix=/usr/local && make && $SUDO make install
+            cd singularity-<< parameters.singularity-version >> && ./autogen.sh && ./configure --prefix=/usr/local && make && $SUDO make install
 
   build-image:
     description: Build a Singularity container using default install (not Docker)

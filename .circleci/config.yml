@@ -80,7 +80,8 @@ jobs:
       - run:
           name: publish production versions
           command: |
-            circleci orb publish src/orb.yml singularity/singularity@1.0.0 --token $CIRCLE_TOKEN
+            VERSION=$(cat VERSION)
+            circleci orb publish src/orb.yml singularity/singularity@${VERSION} --token $CIRCLE_TOKEN
 
 workflows:
   validate_unit-test_dev-deploy:

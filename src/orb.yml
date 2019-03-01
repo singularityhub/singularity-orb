@@ -6,8 +6,12 @@ description: >
 # EXAMPLES ####################################################################
 examples:
 
-  simple_install:
-    description: Install Singularity Version 3* and Up
+  install_alpine_docker_3:
+    description: |
+      Install Singularity 3.* on the an alpine Docker base (comes with goLang)
+      This combination will build quickly (we use an alpine base that comes with
+      GoLang) but is more limited in functionality due to being in a container.
+
     usage:
       version: 2.1
 
@@ -15,14 +19,18 @@ examples:
         singularity: singularity/singularity@1.0.0
 
       workflows:
-        install_singularity_cli:
-          executor: alpine-docker
-          jobs:
-            - singularity/install_cli:
-                singularity-version: 3.1.0
+          install_alpine_docker_3_example:
+            jobs:
+              - singularity/install_alpine_docker_3:
+                  singularity-version: 3.1.0
 
-  docker_install:
-    description: Use Singularity via a Docker container
+
+  install_debian_2:
+    description: |
+      Install Singularity 2.* on a debian base. We don't need GoLang for
+      Singularity under 2.6.1, so this install is not as complicated. We
+      can easily install on the debian machine without a Docker container.
+
     usage:
       version: 2.1
 
@@ -30,15 +38,18 @@ examples:
         singularity: singularity/singularity@1.0.0
 
       workflows:
-        use_docker_cli:
-          executor: docker
-          jobs:
-            - singularity/docker_cli:
-                singularity-version: 3.1-slim
+          install_debian_2_example:
+            jobs:
+              - singularity/install_debian_2:
+                  singularity-version: 2.6.1
 
 
-  simple_build:
-    description: Build a Singularity Container
+  install_debian_3:
+    description: |
+      Install Singularity 3.* on a debian base. We must first install GoLang.
+      This is slower than using a pre-built container base, but gives us a native
+      install with more functionality.
+
     usage:
       version: 2.1
 
@@ -46,13 +57,118 @@ examples:
         singularity: singularity/singularity@1.0.0
 
       workflows:
-        build_singularity:
-          executor: alpine-docker
-          jobs:
-            - singularity/build_container:
-                singularity-version: 3.1.0
-                from-uri: docker://ubuntu
-                image: ubuntu.sif
+          install_debian_3_example:
+            jobs:
+              - singularity/install_debian_3:
+                  go-version: 11.1.5
+                  singularity-version: 3.1.0
+
+
+  docker_cli:
+    description: |
+       Interact with Singularity via a Docker container. The containers are
+       prebuilt, so this step supports any of the tags belonging to the
+       singularityware/singularity Docker repository. The first job should
+       set the machine exceutor to the container, and you can continue with
+       steps after that.
+
+    usage:
+      version: 2.1
+
+      orbs:
+        singularity: singularity/singularity@1.0.0
+
+      workflows:
+          docker_cli_example:
+            jobs:
+              - singularity/docker_cli:
+                  singularity-version: 3.1-slim
+
+
+  build_container_docker_base:
+    description: |
+        Build a Singularity Container using a a pre-build Docker base. This is
+        the fastest build option because the container is prebuilt, but functionality
+        (interaction with the container) after is limited for the same reason.
+        This job supports any version of Singularity, and the version maps
+        to the tag of singularityware/singularity on Docker Hub.
+
+    usage:
+      version: 2.1
+
+      orbs:
+        singularity: singularity/singularity@1.0.0
+
+      workflows:
+          build_container_docker_base_example:
+            jobs:
+              - singularity/build_container_docker_base:
+                  from-uri: docker://busybox
+                  image: busybox.sif
+
+
+  build_container_docker_custom_3:
+    description: |
+        Build a Singularity Container using an alpine Docker base, and install
+        a custom version of GoLang and Singularity in the 3.* family.
+
+    usage:
+      version: 2.1
+
+      orbs:
+        singularity: singularity/singularity@1.0.0
+
+      workflows:
+          build_container_docker_custom_3_example:
+            jobs:
+              - singularity/build_container_docker_custom_3:
+                  singularity-version: 3.1.0
+                  go-version: 1.11.5
+                  from-uri: docker://busybox
+                  image: busybox.sif
+
+
+  build_container_custom_2:
+    description: |
+        Build a Singularity 2.* Container on a debian (machine) base. This means
+        that we install Singularity from source
+
+    usage:
+      version: 2.1
+
+      orbs:
+        singularity: singularity/singularity@1.0.0
+
+      workflows:
+          build_container_custom_2_example:
+            jobs:
+              - singularity/build_container_custom_2:
+                  singularity-version: 2.6.1
+                  from-uri: docker://busybox
+                  image: busybox.sif
+
+
+  build_container_custom_3:
+    description: |
+      Build a Singularity Container version 3.* base on a debian base. This
+      option will give you the most freedom to use the container after building.
+
+    usage:
+      version: 2.1
+
+      orbs:
+        singularity: singularity/singularity@1.0.0
+
+      workflows:
+          build_container_custom_3_example:
+            jobs:
+              - singularity/build_container_custom_3:
+                  go-version: 1.11.5
+                  singularity-version: 3.1.0
+                  from-uri: docker://busybox
+                  image: busybox.sif
+
+
 
 
 # EXECUTORS ####################################################################
@@ -88,7 +204,7 @@ commands:
     parameters:
       go-version:
         type: string
-        default: "11.1.5"
+        default: "1.11.5"
     steps:
       - run:
           name: Install GoLang
@@ -256,7 +372,7 @@ jobs:
     parameters:
       singularity-version:
         type: string
-        default: "3.1.0"
+        default: "2.6.1"
     steps:
       - debian-install-2:
           singularity-version: <<parameters.singularity-version>>
@@ -338,7 +454,7 @@ jobs:
         default: container.sif
       go-version:
         type: string
-        default: "11.1.5"
+        default: "1.11.5"
       singularity-version:
         description: The Singularity version
         type: string
@@ -368,7 +484,7 @@ jobs:
         default: container.sif
       singularity-version:
         type: string
-        default: "3.1.0"
+        default: "2.6.1"
     steps:
       - debian-install-2:
           singularity-version: <<parameters.singularity-version>>

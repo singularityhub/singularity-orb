@@ -48,7 +48,7 @@ jobs:
     executor: singularity/machine
     steps:
       - checkout
-      - singularity/install-go:
+      - singularity/go-install:
           go-version: 1.11.5
       - singularity/debian-install-3:
           singularity-version: 3.1.0
@@ -67,11 +67,11 @@ jobs:
     executor: singularity/alpine-docker
     steps:
       - checkout
-      - install-go:
+      - singularity/install-go:
           go-version: 11.1.5
-      - alpine-install-3:
+      - singularity/alpine-install-3:
           singularity-version: 3.1.0
-      - build-image-docker:
+      - singularity/build-image-docker:
           from-uri: docker://busybox
           image: busybox.sif
 
@@ -79,9 +79,9 @@ jobs:
     executor: singularity/machine
     steps:
       - checkout
-      - debian-install-2:
+      - singularity/debian-install-2:
           singularity-version: 2.6.1
-      - build-image-docker:
+      - singularity/build-image-docker:
           from-uri: docker://busybox
           image: busybox.sif
 

@@ -1,4 +1,4 @@
-# CircleCI build config to test the Google Cloud Platform Container Registry Orb published by CircleCI
+# CircleCI build config to test the Singularity Orb
 
 version: 2.1
 
@@ -81,8 +81,6 @@ jobs:
           name: publish production versions
           command: |
             circleci orb publish src/orb.yml singularity/singularity@1.0.0 --token $CIRCLE_TOKEN
-            circleci orb publish src/orb.yml singularity/singularity@1.0.0:$CIRCLE_BRANCH-${CIRCLE_SHA1:0:7} --token $CIRCLE_TOKEN
-            circleci orb publish src/orb.yml singularity/singularity@1.0.0:${CIRCLE_SHA1:0:7} --token $CIRCLE_TOKEN
 
 workflows:
   validate_unit-test_dev-deploy:

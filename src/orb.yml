@@ -171,20 +171,6 @@ commands:
           command: |
               singularity build <<parameters.image>> <<parameters.from-uri>>
 
-  inspect-image:
-    description: Inspect a Singularity Container
-    parameters:
-      image:
-        description: The image binary to inspect (e.g., container.sif)
-        type: string
-        default: container.sif
-    steps:
-      - run:
-          name: Inspect Singularity Container
-          command: |
-            if [ -e "<< parameters.image >>" ]; then
-                singularity inspect << parameters.image >>
-            fi
 
 jobs:
   install_cli:
@@ -230,8 +216,6 @@ jobs:
       - build-image:
           from-uri: <<parameters.from-uri>>
           image: <<parameters.image>>
-      - inspect-image:
-          image: <<parameters.image>>
 
   build_container_version_2:
     description: Build a Singularity Container, pre goLang versions
@@ -250,8 +234,6 @@ jobs:
       - build-image:
           from-uri: <<parameters.from-uri>>
           image: <<parameters.image>>
-      - inspect-image:
-          image: <<parameters.image>>
 
   build_container_docker:
     description: Build a Singularity Container
@@ -268,6 +250,4 @@ jobs:
     steps:
       - build-image-docker:
           from-uri: <<parameters.from-uri>>
-          image: <<parameters.image>>
-      - inspect-image:
           image: <<parameters.image>>

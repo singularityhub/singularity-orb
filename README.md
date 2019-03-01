@@ -21,12 +21,11 @@ $ circleci orb publish src/orb.yml singularity/singularity@dev:alpha
 
 ## Examples
 
-Here is a very basic example to build a container - this is the `.circleci/config.yml`
-file in your repository!
+The examples below describe the `.circleci/config.yml` file in your repository!
+Here is a very basic example to build a container - this will use the
+default Singularity version 3.1.
 
 ```yaml
-# CircleCI build config to test the Google Cloud Platform Container Registry Orb published by CircleCI
-
 version: 2.1
 
 orbs:
@@ -43,7 +42,49 @@ workflows:
               only: master
 ```
 
-A repository with this example is available at 
+You can also specify a custom version of Singularity (this corresponds to
+the version that you would clone from GitHub - the builder will use a go
+base docker image and install Singularity to it:
+
+```yaml
+version: 2.1
+
+orbs:
+  singularity: singularity/singularity@1.0.0
+
+workflows:
+  build_example:
+    jobs:
+      - singularity/build_container:
+          singularity-version: 3.0.2
+          from-uri: docker://busybox 
+          image: busybox.sif 
+          filters:
+            branches:
+              only: master
+```
+
+But if you want to just use a Docker container from [singularityware/singularity](https://hub.docker.com/r/singularityware/singularity/tags)
+the job name that you want is `singularity/build_container_docker` and the default `singularity-version` corresponds to `3.1-slim`.
+
+```yaml
+version: 2.1
+
+orbs:
+  singularity: singularity/singularity@1.0.0
+
+workflows:
+  build_example:
+    jobs:
+      - singularity/build_container_docker:
+          from-uri: docker://busybox 
+          image: busybox.sif 
+          filters:
+            branches:
+              only: master
+```
+
+A repository with a starter example is available at 
 [singularityhub/singularity-orb-example](https://github.com/singularityhub/singularity-orb-example).
 
 ### What if I need help?

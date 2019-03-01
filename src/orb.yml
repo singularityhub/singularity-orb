@@ -57,13 +57,18 @@ examples:
 # EXECUTORS ####################################################################
 # These are executors, the backend bases to run on
 executors:
-  default:
+  machine:
     description: >
       A debian-based machine executor.
     machine: true
+  default:
+    description: >
+      An alpine, go-lang base image that can have a custom Singularity install
+    docker:
+      - image: iron/go:dev
   docker:
     description: >
-      Docker container base to interact with Singularity
+      Pre-build Docker container base to interact with Singularity
     parameters:
       singularity-version:
         type: string
@@ -81,40 +86,14 @@ commands:
       singularity-version:
         type: string
         default: "3.1.0"
-      go-version:
-        type: string
-        default: "1.11.5"
     steps:
       - run:
-          name: Install GoLang
+          name: Install Singularity (Version 3.* and up)
           command: |
-            # The trick below is taken from circleci/gcp-cli, thanks!
-            # Set sudo to work whether logged in as root user or non-root user
-            if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-            $SUDO apt-get update && $SUDO apt-get install -y wget git jq 
-            $SUDO sed -i -e 's/^Defaults\tsecure_path.*$//' /etc/sudoers
-            $SUDO apt-get install -y build-essential \
-                                     squashfs-tools \
-                                     libtool \
-                                     uuid-dev \
-                                     libssl-dev \
-                                     libgpgme11-dev \
-                                     libseccomp-dev \
-                                     pkg-config
-
-            # Install GoLang 
-            wget https://dl.google.com/go/go<< parameters.go-version >>.src.tar.gz && \
-            tar -C /usr/local -xzf go<< parameters.go-version >>.src.tar.gz 
-            export PATH=$PATH:/usr/local/go/bin && \
-            $SUDO mkdir -p /go && \
-            $SUDO chmod -R 7777 /go
-
-      - run:
-          name: Install Singularity
-          command: |
-            # The trick below is taken from circleci/gcp-cli, thanks!
-            # Set sudo to work whether logged in as root user or non-root user
-            if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            apk update && \
+            apk add --virtual automake build-base linux-headers libffi-dev
+            apk add --no-cache bash git openssh gcc squashfs-tools sudo libtool gawk
+            apk add --no-cache linux-headers build-base openssl-dev util-linux util-linux-dev
             export GOPATH=/go
             go get -u github.com/golang/dep/cmd/dep
             mkdir -p ${GOPATH}/src/github.com/sylabs
@@ -122,6 +101,37 @@ commands:
             wget https://github.com/sylabs/singularity/releases/download/v<< parameters.singularity-version >>/singularity-<< parameters.singularity-version >>.tar.gz
             tar -xzvf singularity-<< parameters.singularity-version >>.tar.gz
             cd singularity && ./mconfig -p /usr/local && make -C builddir && $SUDO make -C builddir install
+
+  install-version-2:
+    description: |
+      Install Singularity Versions 2.*
+    parameters:
+      singularity-version:
+        type: string
+        default: "2.6.1"
+    steps:
+      - run:
+          name: Install Singularity (pre GoLang)
+          command: |
+            # The trick below is taken from circleci/gcp-cli, thanks!
+            # Set sudo to work whether logged in as root user or non-root user
+            if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            $SUDO apt-get update && $SUDO apt-get -y install git \
+                   build-essential \
+                   libtool \
+                   squashfs-tools \
+                   autotools-dev \
+                   libarchive-dev \
+                   automake \
+                   autoconf \
+                   debootstrap \
+                   yum \
+                   uuid-dev \
+                   libssl-dev \
+                   python3-dev
+            wget https://github.com/sylabs/singularity/releases/download/<< parameters.singularity-version >>/singularity-<< parameters.singularity-version >>.tar.gz
+            tar -xzvf singularity-<< parameters.singularity-version >>.tar.gz
+            cd singularity-<< parameters.singularity-version >> && ./autogen.sh && ./configure --prefix=/usr/local && make && $SUDO make install
 
   build-image:
     description: Build a Singularity container using default install (not Docker)
@@ -137,7 +147,7 @@ commands:
     steps:
       - run:
           name: Build Singularity Container
-          command: | 
+          command: |
               if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
               $SUDO singularity build <<parameters.image>> <<parameters.from-uri>>
 
@@ -158,12 +168,11 @@ commands:
     steps:
       - run:
           name: Build Singularity Container
-          command: | 
-              if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-              docker exec --volume $PWD/:/data singularityware/singularity:<<parameters.singularity-version>> singularity build /data/<<parameters.image>> <<parameters.from-uri>>
+          command: |
+              singularity build <<parameters.image>> <<parameters.from-uri>>
 
   inspect-image:
-    description:  Inspect a Singularity Container
+    description: Inspect a Singularity Container
     parameters:
       image:
         description: The image binary to inspect (e.g., container.sif)
@@ -177,25 +186,6 @@ commands:
                 singularity inspect << parameters.image >>
             fi
 
-  inspect-image-docker:
-    description:  Inspect a Singularity Container
-    parameters:
-      singularity-version:
-        type: string
-        default: "3.1-slim"
-      image:
-        description: The image binary to inspect (e.g., container.sif)
-        type: string
-        default: container.sif
-    steps:
-      - run:
-          name: Inspect Singularity Container
-          command: |
-            if [ -e "<< parameters.image >>" ]; then
-                docker exec --volume $PWD/:/data singularityware/singularity:<<parameters.singularity-version>> singularity inspect << parameters.image >>
-            fi
-
-
 jobs:
   install_cli:
     description: Install Singularity on the default executor.
@@ -204,13 +194,9 @@ jobs:
       singularity-version:
         type: string
         default: "3.1.0"
-      go-version:
-        type: string
-        default: "1.11.5"
     steps:
       - install:
           singularity-version: <<parameters.singularity-version>>
-          go-version: <<parameters.go-version>>
       - run: singularity --version
 
   docker_cli:
@@ -225,7 +211,7 @@ jobs:
       - run:
           name: Check Singularity Version
           singularity-version: <<parameters.singularity-version>>
-          command: docker exec singularityware/singularity:<<parameters.singularity-version>> singularity --version
+          command: singularity --version
 
   build_container:
     description: Build a Singularity Container
@@ -241,6 +227,26 @@ jobs:
         default: container.sif
     steps:
       - install
+      - build-image:
+          from-uri: <<parameters.from-uri>>
+          image: <<parameters.image>>
+      - inspect-image:
+          image: <<parameters.image>>
+
+  build_container_version_2:
+    description: Build a Singularity Container, pre goLang versions
+    executor: machine
+    parameters:
+      from-uri:
+        description: The Singularity recipe path or docker:// uri to build from.
+        type: string
+        default: Singularity
+      image:
+        description: The image binary to build (e.g., container.sif)
+        type: string
+        default: container.sif
+    steps:
+      - install-version-2
       - build-image:
           from-uri: <<parameters.from-uri>>
           image: <<parameters.image>>
@@ -263,5 +269,5 @@ jobs:
       - build-image-docker:
           from-uri: <<parameters.from-uri>>
           image: <<parameters.image>>
-      - inspect-image-docker:
+      - inspect-image:
           image: <<parameters.image>>

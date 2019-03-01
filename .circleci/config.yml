@@ -7,17 +7,13 @@ orbs:
 
 executors:
   cli:
-    resource_class: small
+    resource_class: medium
     docker:
       - image: circleci/circleci-cli
   lint-condo:
-    resource_class: small
+    resource_class: medium
     docker:
       - image: singapore/lint-condo
-  node:
-    resource_class: small
-    docker:
-      - image: circleci/node
 
 jobs:
   lint:
@@ -30,43 +26,63 @@ jobs:
     executor: cli
     steps:
       - checkout
-      - run: circleci orb validate src/@orb.yml
+      - run: circleci orb validate src/orb.yml
+
+  test-orb-commands:
+    executor: singularity/default
+    steps:
+      - checkout
+      - singularity/install:
+          singularity-version: 3.1.0
+      - singularity/build-image:
+          image: busybox.sif
+          from-uri: docker://busybox
+
+  test-orb-commands-version-2:
+    executor: singularity/machine
+    steps:
+      - checkout
+      - singularity/install-version-2:
+          singularity-version: 2.6.1
+      - singularity/build-image:
+          image: busybox.sif
+          from-uri: docker://busybox
+
+  test-orb-commands-docker:
+    executor: singularity/docker
+    steps:
+      - checkout
+      - singularity/build-image-docker:
+          image: busybox.sif
+          from-uri: docker://busybox
 
   publish-dev:
     executor: cli
     steps:
       - checkout
-
       - run:
           name: publish dev versions
           command: |
-            # for integration testing
-            circleci orb publish src/@orb.yml singularity/singularity@dev:alpha --token $CIRCLE_TOKEN
-            circleci orb publish src/@orb.yml singularity/singularity@dev:$CIRCLE_BRANCH-${CIRCLE_SHA1:0:7} --token $CIRCLE_TOKEN
-            circleci orb publish src/@orb.yml singularity/singularity@dev:${CIRCLE_SHA1:0:7} --token $CIRCLE_TOKEN
-
-
-  test-orb-commands:
-    executor: singularity/default
-    steps:
-      # test orb commands
-      - checkout
-      - gcp-gcr/gcr-auth
-      - gcp-gcr/build-image:
-          registry-url: us.gcr.io
-          image: sample-image
-          tag: ${CIRCLE_SHA1:0:7}.$CIRCLE_BUILD_NUMBER
-          path-to-dockerfile: .
-      - gcp-gcr/push-image:
-          registry-url: us.gcr.io
-          image: sample-image
-          tag: ${CIRCLE_SHA1:0:7}.$CIRCLE_BUILD_NUMBER
+            circleci orb publish src/orb.yml singularity/singularity@dev:alpha --token $CIRCLE_TOKEN
+            circleci orb publish src/orb.yml singularity/singularity@dev:$CIRCLE_BRANCH-${CIRCLE_SHA1:0:7} --token $CIRCLE_TOKEN
+            circleci orb publish src/orb.yml singularity/singularity@dev:${CIRCLE_SHA1:0:7} --token $CIRCLE_TOKEN
 
   dev-promote-prod:
     executor: cli
     steps:
       - checkout
-      - run: circleci orb publish promote circleci/gcp-gcr@dev:${CIRCLE_SHA1:0:7} patch --token $CIRCLE_TOKEN
+      - run: circleci orb publish promote singularity/singularity@dev:${CIRCLE_SHA1:0:7} patch --token $CIRCLE_TOKEN
+
+  publish:
+    executor: cli
+    steps:
+      - checkout
+      - run:
+          name: publish production versions
+          command: |
+            circleci orb publish src/orb.yml singularity/singularity@1.0.0 --token $CIRCLE_TOKEN
+            circleci orb publish src/orb.yml singularity/singularity@1.0.0:$CIRCLE_BRANCH-${CIRCLE_SHA1:0:7} --token $CIRCLE_TOKEN
+            circleci orb publish src/orb.yml singularity/singularity@1.0.0:${CIRCLE_SHA1:0:7} --token $CIRCLE_TOKEN
 
 workflows:
   validate_unit-test_dev-deploy:
@@ -77,7 +93,30 @@ workflows:
           requires:
             - lint
 
-      - publish-dev:
+      - test-orb-commands:
           requires:
             - validate
-          context: orb-publishing
+
+      - test-orb-commands-docker:
+          requires:
+            - validate
+
+      - test-orb-commands-version-2:
+          requires:
+            - validate
+
+      - publish-dev:
+          requires:
+            - test-orb-commands
+            - test-orb-commands-docker
+            - test-orb-commands-version-2
+
+      - publish:
+          requires:
+            - test-orb-commands
+            - test-orb-commands-docker
+            - test-orb-commands-version-2
+          filters:
+             branches:
+               only:
+                 - master

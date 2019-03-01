@@ -91,12 +91,12 @@ commands:
         default: "11.1.5"
     steps:
       - run:
-          name:
+          name: Install GoLang
           command: |
             if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
             cd /tmp
-            wget https://dl.google.com/go/go<< paramters.go-version >>.linux-amd64.tar.gz
-            tar -xzf go<< paramters.go-version >>.linux-amd64.tar.gz
+            wget https://dl.google.com/go/go<< parameters.go-version >>.linux-amd64.tar.gz
+            tar -xzf go<< parameters.go-version >>.linux-amd64.tar.gz
             export PATH=/tmp/go/bin:$PATH
                 $SUDO mkdir -p /go
                 $SUDO chmod -R 7777 /go

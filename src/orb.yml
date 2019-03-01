@@ -159,8 +159,7 @@ commands:
 
 
   debian-install-2:
-    description: |
-      Install Singularity Versions 2.* on a debian base
+    description: Install Singularity Versions 2.* on a debian base
     parameters:
       singularity-version:
         type: string
@@ -368,15 +367,15 @@ jobs:
         default: "3.1.0"
     steps:
       - debian-install-2:
-          singularity-version: <<parameters.singularity-version>> 
+          singularity-version: <<parameters.singularity-version>>
       - build-image:
           from-uri: <<parameters.from-uri>>
           image: <<parameters.image>>
 
   build_container_custom_3:
     description: |
-      Build a Singularity Container version 3.* base on a debian base. This 
-      option will give you the most freedom to use the container after building. 
+      Build a Singularity Container version 3.* base on a debian base. This
+      option will give you the most freedom to use the container after building.
     executor: machine
     parameters:
       from-uri:

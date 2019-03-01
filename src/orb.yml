@@ -99,6 +99,7 @@ commands:
                                                  libgpgme11-dev \
                                                  libseccomp-dev \
                                                  pkg-config
+            ldconfig
             export GOPATH=/go
             go get -u github.com/golang/dep/cmd/dep
             mkdir -p ${GOPATH}/src/github.com/sylabs

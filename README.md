@@ -2,7 +2,10 @@
 
 This is the [Circle CI Orb](https://circleci.com/orbs/registry/) to help you 
 interact with [Singularity containers](https://www.github.com/sylabs/singularity).
-More notes to come!
+Please see the [published orb](https://circleci.com/orbs/registry/orb/singularity/singularity)
+to get the latest version, or look into the
+[VERSION](VERSION) file here. The documentation will state 1.0.0 but we are beyond
+that version.
 
 ## Development
 
@@ -22,82 +25,195 @@ $ circleci orb publish src/orb.yml singularity/singularity@dev:alpha
 ## Examples
 
 The examples below describe the `.circleci/config.yml` file in your repository!
-Here is a very basic example to build a container - this will use the
-default Singularity version 3.1. See the [VERSION](VERSION) file to
-get the current published version.
+Generally, the examples below will vary on:
+
+ - The executor (either a machine or Docker base image)
+ - The versions of software installed (e.g., Singularity or GoLang)
+ 
+@vsoch has tried to provide you with all the combinations that you might need to
+build and interact with containers. For example, building a container using a
+pre-built Docker base is the fastest, but you couldn't interact with it.
+Using a machine base (and installing GoLang and Singularity, maximally) would
+give you more functionality, but the build steps would take longer (and caching is
+recommended).
+
+### Build Examples
+
+#### Fast Build
+
+For the fastest build, you can use a pre-built Docker container. Since the
+dependencies are inside the container, you can specify any version of Singularity.
+The version coincides with a Docker tag of [singularityware/singularity](https://hub.docker.com/r/singularityware/singularity/tags)
+on Docker Hub.
 
 ```yaml
 version: 2.1
 
 orbs:
-  singularity: singularity/singularity@1.0.1
+  singularity: singularity/singularity@1.0.0
 
 workflows:
-  build_example:
+  build_container_docker_base_example:
     jobs:
-      - singularity/build_container:
-          from-uri: docker://busybox 
-          image: busybox.sif 
-```
-
-You can also specify a custom version of Singularity (this corresponds to
-the version that you would clone from GitHub - the builder will use a go
-base docker image and install Singularity to it:
-
-```yaml
-version: 2.1
-
-orbs:
-  singularity: singularity/singularity@1.0.1
-
-workflows:
-  build_example:
-    jobs:
-      - singularity/build_container:
-          singularity-version: 3.0.2
-          from-uri: docker://busybox 
-          image: busybox.sif 
-```
-
-But if you want to just use a Docker container from [singularityware/singularity](https://hub.docker.com/r/singularityware/singularity/tags)
-the job name that you want is `singularity/build_container_docker` and the default `singularity-version` corresponds to `3.1-slim`.
-
-```yaml
-version: 2.1
-
-orbs:
-  singularity: singularity/singularity@1.0.1
-
-workflows:
-  build_example:
-    jobs:
-      - singularity/build_container_docker:
-          from-uri: docker://busybox 
-          image: busybox.sif 
-```
-
-*This is the fastest way to build!*
-
-Finally, if you want an older version of Singularity (pre GoLang) you want to do this:
-
-```yaml
-version: 2.1
-
-orbs:
-  singularity: singularity/singularity@1.0.1
-
-workflows:
-  build_example:
-    jobs:
-      - singularity/build_container_version_2:
+      - singularity/build_container_docker_base:
           from-uri: docker://busybox
-          image: busybox.sif 
+          image: busybox.sif
 ```
 
-The default `singularity-version` is 2.6.1, again corresponding to the [Github tag](https://github.com/sylabs/singularity/releases).
 
+
+#### Debian Base with Custom (Singularity 2) Version
+
+It's more likely that you'd want a machine (debian) base with Singularity if you
+want to otherwise interact with your container. Here we install Singularity
+from source.
+
+```yaml
+version: 2.1
+
+orbs:
+  singularity: singularity/singularity@1.0.0
+
+workflows:
+  build_container_custom_2_example:
+    jobs:
+      - singularity/build_container_custom_2:
+          singularity-version: 2.6.1
+          from-uri: docker://busybox
+          image: busybox.sif
+```
+
+
+#### Debian Base with Custom (Singularity 3) Version
+
+And the same for the Singularity 3.* family. Notice you also have the
+choice to define the version of GoLang, since we need to install it (the
+default is 11.1.5). This option will give you the most freedom to use the 
+container after building.
+
+
+```yaml
+version: 2.1
+
+orbs:
+  singularity: singularity/singularity@1.0.0
+
+workflows:
+  build_container_custom_3_example:
+  jobs:
+    - singularity/build_container_custom_3:
+        go-version: 1.11.5
+        singularity-version: 3.1.0
+        from-uri: docker://busybox
+        image: busybox.sif
+```
+
+
+#### Docker Base with Custom (Singularity 3) Version
+
+You can also install a custom version of Singularity into an alpine base image
+that already has GoLang installed.
+
+```yaml
+version: 2.1
+
+orbs:
+  singularity: singularity/singularity@1.0.0
+
+workflows:
+  build_container_docker_custom_3_example:
+  jobs:
+    - singularity/build_container_docker_custom_3:
+        singularity-version: 3.1.0
+        go-version: 1.11.5
+        from-uri: docker://busybox
+        image: busybox.sif
+```
+
+
+### Install
+
+#### Install Debian, Singularity 2.*
+
+This is more likely to be useful to you if you want to otherwise interact
+with your container, beyond build. Here is how to build a 2.* derivative of
+Singularity. We aren't using Docker.
+
+```yaml
+version: 2.1
+
+orbs:
+  singularity: singularity/singularity@1.0.0
+
+workflows:
+  install_debian_2_example:
+    jobs:
+      - singularity/install_debian_2:
+        singularity-version: 2.6.1
+```
+
+#### Install Debian, Singularity 3.*
+
+Let's say that you want the same, but you want to install a specific
+version of Singularity (over 3.0). Here we can use an alpine Docker base
+(comes with GoLang) to add Singularity on top of it. 
+
+```yaml
+version: 2.1
+
+orbs:
+  singularity: singularity/singularity@1.0.0
+
+workflows:
+  install_debian_3_example:
+    jobs:
+      - singularity/install_debian_3:
+        go-version: 11.1.5
+        singularity-version: 3.1.0
+```
+
+#### Install Docker, Singularity 3.*
+
+You can also customize the version of Singularity installed in an alpine
+Docker base.
+
+```yaml
+version: 2.1
+
+orbs:
+  singularity: singularity/singularity@1.0.0
+
+  workflows:
+    install_alpine_docker_3_example:
+      jobs:
+        - singularity/install_alpine_docker_3:
+            singularity-version: 3.1.0
+```
+
+
+### Other
+
+#### Interaction with Singularity via Docker Client
+
+To just get the Docker base image with Singularity (no build) you can do that:
+
+```yaml
+version: 2.1
+
+orbs:
+  singularity: singularity/singularity@1.0.0
+
+  workflows:
+    docker_cli_example:
+      jobs:
+        - singularity/docker_cli:
+            singularity-version: 3.1-slim
+```
+
+I don't have any good examples of using the above yet, please contribute yours if you do!
 A repository with a starter example is available at 
 [singularityhub/singularity-orb-example](https://github.com/singularityhub/singularity-orb-example).
+
 
 ### What if I need help?
 

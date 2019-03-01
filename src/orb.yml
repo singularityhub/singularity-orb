@@ -94,6 +94,7 @@ commands:
           name: Install GoLang
           command: |
             if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            if ! type "sudo" > /dev/null; then export SUDO=""; fi
             cd /tmp
             wget https://dl.google.com/go/go<< parameters.go-version >>.linux-amd64.tar.gz
             tar -xzf go<< parameters.go-version >>.linux-amd64.tar.gz

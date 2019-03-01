@@ -2,7 +2,8 @@
 
 This is the [Circle CI Orb](https://circleci.com/orbs/registry/) to help you 
 interact with [Singularity containers](https://www.github.com/sylabs/singularity).
-Please see the [published orb]() to get the latest version, or look into the
+Please see the [published orb](https://circleci.com/orbs/registry/orb/singularity/singularity)
+to get the latest version, or look into the
 [VERSION](VERSION) file here. The documentation will state 1.0.0 but we are beyond
 that version.
 
@@ -51,12 +52,12 @@ version: 2.1
 orbs:
   singularity: singularity/singularity@1.0.0
 
-  workflows:
-    build_container_docker_base_example:
-      jobs:
-        - singularity/build_container_docker_base:
-            from-uri: docker://busybox
-            image: busybox.sif
+workflows:
+  build_container_docker_base_example:
+    jobs:
+      - singularity/build_container_docker_base:
+          from-uri: docker://busybox
+          image: busybox.sif
 ```
 
 

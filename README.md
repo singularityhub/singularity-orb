@@ -215,6 +215,12 @@ A repository with a starter example is available at
 [singularityhub/singularity-orb-example](https://github.com/singularityhub/singularity-orb-example).
 
 
+### In the Wild
+
+Here are some examples of Orbs in the wild.
+
+ - [Singularity Python Client](https://github.com/singularityhub/singularity-cli/blob/master/.circleci/config.yml): uses Orb commands to install different versions of Singularity.
+
 ### What if I need help?
 
 Please [open an issue](https://www.github.com/singularityhub/singularity-orb)!

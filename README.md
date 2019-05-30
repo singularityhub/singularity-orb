@@ -7,6 +7,11 @@ to get the latest version, or look into the
 [VERSION](VERSION) file here. The documentation will state 1.0.0 but we are beyond
 that version.
 
+## Versions
+
+ - 1.0.3: coincides with Singularity 3.1.0 and 2.6.1 as default. There is a bug with the singularity-version variable so it doesn't change from 3.1.0.
+ - 1.0.4: bug above is fixed, and default Singularity for 3.x is 3.2.1.
+
 ## Development
 
 Before this Orb was used / tested with CircleCI, I needed to [install](https://circleci.com/docs/2.0/creating-orbs/)
@@ -103,7 +108,7 @@ workflows:
   jobs:
     - singularity/build_container_custom_3:
         go-version: 1.11.5
-        singularity-version: 3.1.0
+        singularity-version: 3.2.1
         from-uri: docker://busybox
         image: busybox.sif
 ```
@@ -124,7 +129,7 @@ workflows:
   build_container_docker_custom_3_example:
   jobs:
     - singularity/build_container_docker_custom_3:
-        singularity-version: 3.1.0
+        singularity-version: 3.2.1
         go-version: 1.11.5
         from-uri: docker://busybox
         image: busybox.sif
@@ -169,7 +174,7 @@ workflows:
     jobs:
       - singularity/install_debian_3:
         go-version: 11.1.5
-        singularity-version: 3.1.0
+        singularity-version: 3.2.1
 ```
 
 #### Install Docker, Singularity 3.*
@@ -187,7 +192,7 @@ orbs:
     install_alpine_docker_3_example:
       jobs:
         - singularity/install_alpine_docker_3:
-            singularity-version: 3.1.0
+            singularity-version: 3.2.1
 ```
 
 
@@ -207,7 +212,7 @@ orbs:
     docker_cli_example:
       jobs:
         - singularity/docker_cli:
-            singularity-version: 3.1-slim
+            singularity-version: 3.2.1-slim
 ```
 
 I don't have any good examples of using the above yet, please contribute yours if you do!

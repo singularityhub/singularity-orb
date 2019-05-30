@@ -22,7 +22,7 @@ examples:
           install_alpine_docker_3_example:
             jobs:
               - singularity/install_alpine_docker_3:
-                  singularity-version: 3.1.0
+                  singularity-version: 3.2.1
 
 
   install_debian_2:
@@ -61,7 +61,7 @@ examples:
             jobs:
               - singularity/install_debian_3:
                   go-version: 1.11.5
-                  singularity-version: 3.1.0
+                  singularity-version: 3.2.1
 
 
   docker_cli:
@@ -82,7 +82,7 @@ examples:
           docker_cli_example:
             jobs:
               - singularity/docker_cli:
-                  singularity-version: 3.1-slim
+                  singularity-version: 3.2.1-slim
 
 
   build_container_docker_base:
@@ -122,7 +122,7 @@ examples:
           build_container_docker_custom_3_example:
             jobs:
               - singularity/build_container_docker_custom_3:
-                  singularity-version: 3.1.0
+                  singularity-version: 3.2.1
                   go-version: 1.11.5
                   from-uri: docker://busybox
                   image: busybox.sif
@@ -164,7 +164,7 @@ examples:
             jobs:
               - singularity/build_container_custom_3:
                   go-version: 1.11.5
-                  singularity-version: 3.1.0
+                  singularity-version: 3.2.1
                   from-uri: docker://busybox
                   image: busybox.sif
 
@@ -190,7 +190,7 @@ executors:
     parameters:
       singularity-version:
         type: string
-        default: "3.1-slim"
+        default: "3.2.1-slim"
     docker:
       - image: singularityware/singularity:<< parameters.singularity-version >>
 
@@ -225,7 +225,7 @@ commands:
     parameters:
       singularity-version:
         type: string
-        default: "3.1.0"
+        default: "3.2.1"
     steps:
       - run:
           name: install Singularity 3.*
@@ -245,8 +245,8 @@ commands:
             go get -u github.com/golang/dep/cmd/dep && \
             mkdir -p ${GOPATH}/src/github.com/sylabs && \
             cd ${GOPATH}/src/github.com/sylabs && \
-            wget https://github.com/sylabs/singularity/releases/download/v3.1.0/singularity-3.1.0.tar.gz && \
-            tar -xzvf singularity-3.1.0.tar.gz && \
+            wget https://github.com/sylabs/singularity/releases/download/v<< parameters.singularity-version >>/singularity-<< parameters.singularity-version >>.tar.gz && \
+            tar -xzvf singularity-<< parameters.singularity-version >>.tar.gz && \
             cd singularity && \
             ./mconfig -p /usr/local && \
             make -C builddir && \
@@ -258,7 +258,7 @@ commands:
     parameters:
       singularity-version:
         type: string
-        default: "3.1.0"
+        default: "3.2.1"
     steps:
       - run:
           name: Install Singularity (Version 3.* and up) in the Docker container
@@ -358,7 +358,7 @@ jobs:
     parameters:
       singularity-version:
         type: string
-        default: "3.1.0"
+        default: "3.2.1"
     steps:
       - alpine-install-3:
           singularity-version: <<parameters.singularity-version>>
@@ -388,7 +388,7 @@ jobs:
     parameters:
       singularity-version:
         type: string
-        default: "3.1.0"
+        default: "3.2.1"
       go-version:
         type: string
         default: "1.11.5"
@@ -459,7 +459,7 @@ jobs:
       singularity-version:
         description: The Singularity version
         type: string
-        default: 3.1.0
+        default: 3.2.1
     steps:
       - install-go:
           go-version: <<parameters.go-version>>
@@ -512,7 +512,7 @@ jobs:
         default: "1.11.5"
       singularity-version:
         type: string
-        default: "3.1.0"
+        default: "3.2.1"
     steps:
       - install-go:
           go-version: <<parameters.go-version>>

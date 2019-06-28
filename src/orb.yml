@@ -228,7 +228,7 @@ commands:
         default: "3.2.1"
     steps:
       - restore_cache:
-          keys: v6-dependencies-<< parameters.singularity-version >>
+          keys: v7-dependencies-<< parameters.singularity-version >>
       - run:
           name: install Singularity 3.*
           command: |
@@ -265,7 +265,7 @@ commands:
             - /usr/local/libexec/singularity
             - /usr/local/include/singularity
             - /usr/local/var/singularity
-          key: v6-dependencies-<< parameters.singularity-version >>
+          key: v7-dependencies-<< parameters.singularity-version >>
 
 
   alpine-install-3:
@@ -277,7 +277,7 @@ commands:
         default: "3.2.1"
     steps:
       - restore_cache:
-          keys: v6-dependencies-<< parameters.singularity-version >>
+          keys: v7-dependencies-<< parameters.singularity-version >>
       - run:
           name: Install Singularity (Version 3.* and up) in the Docker container
           command: |
@@ -295,6 +295,7 @@ commands:
                 tar -xzvf singularity-<< parameters.singularity-version >>.tar.gz
                 cd singularity && ./mconfig -p /usr/local && make -C builddir && $SUDO make -C builddir install
             fi
+            $SUDO chmod -R 777 /usr/local
 
       - save_cache:
           paths:
@@ -305,7 +306,7 @@ commands:
             - /usr/local/libexec/singularity
             - /usr/local/include/singularity
             - /usr/local/var/singularity
-          key: v6-dependencies-<< parameters.singularity-version >>
+          key: v7-dependencies-<< parameters.singularity-version >>
 
   debian-install-2:
     description: Install Singularity Versions 2.* on a debian base
@@ -315,7 +316,7 @@ commands:
         default: "2.6.1"
     steps:
       - restore_cache:
-          keys: v6-dependencies-<< parameters.singularity-version >>
+          keys: v7-dependencies-<< parameters.singularity-version >>
       - run:
           name: Install Singularity (pre GoLang)
           command: |
@@ -340,11 +341,12 @@ commands:
                 tar -xzvf singularity-<< parameters.singularity-version >>.tar.gz
                 cd singularity-<< parameters.singularity-version >> && ./autogen.sh && ./configure --prefix="${SINGULARITY_PREFIX}" && make && $SUDO make install
             fi
+            $SUDO chmod -R 777 /usr/local
 
       - save_cache:
           paths:
             - /usr/local
-          key: v6-dependencies-<< parameters.singularity-version >>
+          key: v7-dependencies-<< parameters.singularity-version >>
 
   build-image:
     description: Build a Singularity container using default (not Docker)

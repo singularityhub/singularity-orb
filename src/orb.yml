@@ -228,8 +228,11 @@ commands:
       - run:
           name: Fix extraction of cache permissions
           command: |
-            if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-            mkdir -p /opt/singularity
+            which sudo
+            if [[ "$?" == "0" ]]; then
+                if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            fi
+            $SUDO mkdir -p /opt/singularity
             $SUDO chmod 7777 -R /opt/singularity
       - restore_cache:
           keys: v2-dependencies-<< parameters.singularity-version >>
@@ -285,8 +288,11 @@ commands:
       - run:
           name: Fix extraction of cache permissions
           command: |
-            if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-            mkdir -p /opt/singularity
+            which sudo
+            if [[ "$?" == "0" ]]; then
+                if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            fi
+            $SUDO mkdir -p /opt/singularity
             $SUDO chmod 7777 -R /opt/singularity
       - restore_cache:
           keys: v2-dependencies-<< parameters.singularity-version >>
@@ -332,8 +338,11 @@ commands:
       - run:
           name: Fix extraction of cache permissions
           command: |
-            if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-            mkdir -p /opt/singularity
+            which sudo
+            if [[ "$?" == "0" ]]; then
+                if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            fi
+            $SUDO mkdir -p /opt/singularity
             $SUDO chmod 7777 -R /opt/singularity
       - restore_cache:
           keys: v2-dependencies-<< parameters.singularity-version >>

@@ -280,6 +280,7 @@ commands:
          name: Prepare extraction folders
          command: |
             if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            if ! type "sudo" > /dev/null; then export SUDO=""; fi
             $SUDO chmod -R 777 /usr/local
             $SUDO mkdir -p /usr/local/etc/singularity
             $SUDO mkdir -p /usr/local/lib/singularity
@@ -330,6 +331,7 @@ commands:
          name: Prepare extraction folders
          command: |
             if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            if ! type "sudo" > /dev/null; then export SUDO=""; fi
             $SUDO chmod -R 777 /usr/local
             $SUDO mkdir -p /usr/local/etc/singularity
             $SUDO mkdir -p /usr/local/lib/singularity

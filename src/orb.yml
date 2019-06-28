@@ -245,8 +245,8 @@ commands:
 
             # Source the version path
             SINGULARITY_PREFIX="/tmp/singularity/<< parameters.singularity-version >>"
-            echo 'export PATH="${SINGULARITY_PREFIX}/bin:$PATH"' >> "$BASH_ENV"
-            echo 'export PATH="${SINGULARITY_PREFIX}/bin:$PATH"' >> "$HOME/.bashrc"
+            echo "export PATH="${SINGULARITY_PREFIX}/bin:$PATH" >> "$BASH_ENV"
+            echo "export PATH=${SINGULARITY_PREFIX}/bin:$PATH" >> "$HOME/.bashrc"
             source "$BASH_ENV"
 
             if [ ! -f "${SINGULARITY_PREFIX}/bin/singularity" ]; then
@@ -344,8 +344,8 @@ commands:
 
             # Source the version path
             SINGULARITY_PREFIX="/tmp/singularity/<< parameters.singularity-version >>"
-            echo 'export PATH="${SINGULARITY_PREFIX}/bin:$PATH"' >> "$BASH_ENV"
-            echo 'export PATH="${SINGULARITY_PREFIX}/bin:$PATH"' >> "/tmp/singularity/.bashrc"
+            echo "export PATH="${SINGULARITY_PREFIX}/bin:$PATH" >> "$BASH_ENV"
+            echo "export PATH=${SINGULARITY_PREFIX}/bin:$PATH" >> "$HOME/.bashrc"
             source "$BASH_ENV"
 
             if [ ! -f "${SINGULARITY_PREFIX}/bin/singularity" ]; then

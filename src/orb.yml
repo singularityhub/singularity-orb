@@ -295,7 +295,7 @@ commands:
             # Source the version path
             SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
             echo 'export PATH="${SINGULARITY_PREFIX}/bin:$PATH"' >> "$BASH_ENV"
-            echo 'export PATH="${SINGULARITY_PREFIX}/bin:$PATH"' >> "$HOME/.bashrc"
+            echo 'export PATH="${SINGULARITY_PREFIX}/bin:$PATH"' >> "/tmp/singularity/.bashrc"
             source "$BASH_ENV"
 
             if [ ! -f "${SINGULARITY_PREFIX}/bin/singularity" ]; then
@@ -308,8 +308,8 @@ commands:
 
       - save_cache:
           paths:
-            - ~/singularity/<< parameters.singularity-version >>
-          key: v3-dependencies-<< parameters.singularity-version >>
+            - /tmp/singularity/<< parameters.singularity-version >>
+          key: v4-dependencies-<< parameters.singularity-version >>
 
   debian-install-2:
     description: Install Singularity Versions 2.* on a debian base
@@ -345,7 +345,7 @@ commands:
             # Source the version path
             SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
             echo 'export PATH="${SINGULARITY_PREFIX}/bin:$PATH"' >> "$BASH_ENV"
-            echo 'export PATH="${SINGULARITY_PREFIX}/bin:$PATH"' >> "$HOME/.bashrc"
+            echo 'export PATH="${SINGULARITY_PREFIX}/bin:$PATH"' >> "/tmp/singularity/.bashrc"
             source "$BASH_ENV"
 
             if [ ! -f "${SINGULARITY_PREFIX}/bin/singularity" ]; then
@@ -376,7 +376,7 @@ commands:
           name: Build Singularity Container
           command: |
               if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-              if [[ -f "$BASH_ENV" ]]; then source "$BASH_ENV"; else source $HOME/.bashrc; fi
+              if [[ -f "$BASH_ENV" ]]; then source "$BASH_ENV"; else source /tmp/singularity/.bashrc; fi
               $SUDO singularity build <<parameters.image>> <<parameters.from-uri>>
 
   build-image-docker:
@@ -397,7 +397,7 @@ commands:
       - run:
           name: Build Singularity Container
           command: |
-              if [[ -f "$BASH_ENV" ]]; then source "$BASH_ENV"; else source $HOME/.bashrc; fi
+              if [[ -f "$BASH_ENV" ]]; then source "$BASH_ENV"; else source /tmp/singularity/.bashrc; fi
               singularity build <<parameters.image>> <<parameters.from-uri>>
 
 # JOBS #########################################################################

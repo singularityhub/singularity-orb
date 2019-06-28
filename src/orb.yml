@@ -317,9 +317,6 @@ commands:
         type: string
         default: "2.6.1"
     steps:
-      # TODO just install in circle home
-      - run:
-          name: Fix extraction of cache permissions
       - restore_cache:
           keys: v3-dependencies-<< parameters.singularity-version >>
       - run:

@@ -413,6 +413,7 @@ commands:
       - run:
           name: Build Singularity Container
           command: |
+              source "$BASH_ENV"
               singularity build <<parameters.image>> <<parameters.from-uri>>
 
 

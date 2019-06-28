@@ -319,7 +319,6 @@ commands:
             - ~/singularity/<< parameters.singularity-version >>
           key: v3-dependencies-<< parameters.singularity-version >>
 
-
   debian-install-2:
     description: Install Singularity Versions 2.* on a debian base
     parameters:

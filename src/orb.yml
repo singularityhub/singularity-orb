@@ -284,7 +284,7 @@ commands:
                 if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
             fi
             $SUDO mkdir -p $HOME/singularity
-            $SUDO chown -R circleci $HOME/singularity
+            $SUDO chmod -R 777 $HOME/singularity
       - restore_cache:
           keys: v3-dependencies-<< parameters.singularity-version >>
       - run:
@@ -335,7 +335,7 @@ commands:
                 if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
             fi
             $SUDO mkdir -p $HOME/singularity
-            $SUDO chown -R circleci $HOME/singularity
+            $SUDO chmod -R 777 $HOME/singularity
       - restore_cache:
           keys: v3-dependencies-<< parameters.singularity-version >>
       - run:

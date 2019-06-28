@@ -82,7 +82,7 @@ examples:
         docker_cli_example:
           jobs:
             - singularity/docker_cli:
-              singularity-version: 3.2.1-slim
+                singularity-version: 3.2.1-slim
 
 
   build_container_docker_base:

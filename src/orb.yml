@@ -226,7 +226,7 @@ commands:
         default: "3.2.1"
     steps:
       - restore_cache:
-          keys: v4-dependencies-<< parameters.singularity-version >>
+          keys: v5-dependencies-<< parameters.singularity-version >>
       - run:
           name: install Singularity 3.*
           command: |
@@ -240,16 +240,7 @@ commands:
                                      libseccomp-dev \
                                      pkg-config
 
-            # Create a directory in /opt for Singularity
-            mkdir -p /tmp/singularity
-
-            # Source the version path
-            SINGULARITY_PREFIX="/tmp/singularity/<< parameters.singularity-version >>"
-            echo "export PATH="${SINGULARITY_PREFIX}/bin:$PATH" >> "$BASH_ENV"
-            echo "export PATH=${SINGULARITY_PREFIX}/bin:$PATH" >> "$HOME/.bashrc"
-            source "$BASH_ENV"
-
-            if [ ! -f "${SINGULARITY_PREFIX}/bin/singularity" ]; then
+            if [ ! -f "/usr/local/bin/singularity" ]; then
                 export GOPATH=/go
                 export PATH=/tmp/go/bin:$PATH
                 go get -u github.com/golang/dep/cmd/dep && \
@@ -258,15 +249,15 @@ commands:
                 wget https://github.com/sylabs/singularity/releases/download/v<< parameters.singularity-version >>/singularity-<< parameters.singularity-version >>.tar.gz && \
                 tar -xzvf singularity-<< parameters.singularity-version >>.tar.gz && \
                 cd singularity && \
-                ./mconfig -p "${SINGULARITY_PREFIX}" && \
+                ./mconfig -p /usr/local && \
                 make -C builddir && \
                 $SUDO make -C builddir install
             fi
 
       - save_cache:
           paths:
-            - /tmp/singularity/<< parameters.singularity-version >>
-          key: v4-dependencies-<< parameters.singularity-version >>
+            - /usr/local
+          key: v5-dependencies-<< parameters.singularity-version >>
 
 
   alpine-install-3:
@@ -278,7 +269,7 @@ commands:
         default: "3.2.1"
     steps:
       - restore_cache:
-          keys: v4-dependencies-<< parameters.singularity-version >>
+          keys: v5-dependencies-<< parameters.singularity-version >>
       - run:
           name: Install Singularity (Version 3.* and up) in the Docker container
           command: |
@@ -289,27 +280,18 @@ commands:
             apk add --no-cache linux-headers build-base openssl-dev util-linux util-linux-dev
             export GOPATH=/go
 
-            # Create a directory in /opt for Singularity
-            mkdir -p /tmp/singularity
-
-            # Source the version path
-            SINGULARITY_PREFIX="/tmp/singularity/<< parameters.singularity-version >>"
-            echo 'export PATH="${SINGULARITY_PREFIX}/bin:$PATH"' >> "$BASH_ENV"
-            echo 'export PATH="${SINGULARITY_PREFIX}/bin:$PATH"' >> "/tmp/singularity/.bashrc"
-            source "$BASH_ENV"
-
             if [ ! -f "${SINGULARITY_PREFIX}/bin/singularity" ]; then
                 mkdir -p ${GOPATH}/src/github.com/sylabs
                 cd ${GOPATH}/src/github.com/sylabs
                 wget https://github.com/sylabs/singularity/releases/download/v<< parameters.singularity-version >>/singularity-<< parameters.singularity-version >>.tar.gz
                 tar -xzvf singularity-<< parameters.singularity-version >>.tar.gz
-                cd singularity && ./mconfig -p "${SINGULARITY_PREFIX}" && make -C builddir && $SUDO make -C builddir install
+                cd singularity && ./mconfig -p /usr/local && make -C builddir && $SUDO make -C builddir install
             fi
 
       - save_cache:
           paths:
-            - /tmp/singularity/<< parameters.singularity-version >>
-          key: v4-dependencies-<< parameters.singularity-version >>
+            - /usr/local
+          key: v5-dependencies-<< parameters.singularity-version >>
 
   debian-install-2:
     description: Install Singularity Versions 2.* on a debian base
@@ -319,7 +301,7 @@ commands:
         default: "2.6.1"
     steps:
       - restore_cache:
-          keys: v4-dependencies-<< parameters.singularity-version >>
+          keys: v5-dependencies-<< parameters.singularity-version >>
       - run:
           name: Install Singularity (pre GoLang)
           command: |
@@ -339,15 +321,6 @@ commands:
                    libssl-dev \
                    python3-dev
 
-            # Create a directory in /opt for Singularity
-            mkdir -p /tmp/singularity
-
-            # Source the version path
-            SINGULARITY_PREFIX="/tmp/singularity/<< parameters.singularity-version >>"
-            echo "export PATH="${SINGULARITY_PREFIX}/bin:$PATH" >> "$BASH_ENV"
-            echo "export PATH=${SINGULARITY_PREFIX}/bin:$PATH" >> "$HOME/.bashrc"
-            source "$BASH_ENV"
-
             if [ ! -f "${SINGULARITY_PREFIX}/bin/singularity" ]; then
                 wget https://github.com/sylabs/singularity/releases/download/<< parameters.singularity-version >>/singularity-<< parameters.singularity-version >>.tar.gz
                 tar -xzvf singularity-<< parameters.singularity-version >>.tar.gz
@@ -356,9 +329,8 @@ commands:
 
       - save_cache:
           paths:
-            - /tmp/singularity/<< parameters.singularity-version >>
-          key: v4-dependencies-<< parameters.singularity-version >>
-
+            - /usr/local
+          key: v5-dependencies-<< parameters.singularity-version >>
 
   build-image:
     description: Build a Singularity container using default (not Docker)
@@ -376,7 +348,6 @@ commands:
           name: Build Singularity Container
           command: |
               if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-              if [[ -f "$BASH_ENV" ]]; then source "$BASH_ENV"; else source /tmp/singularity/.bashrc; fi
               $SUDO singularity build <<parameters.image>> <<parameters.from-uri>>
 
   build-image-docker:
@@ -397,7 +368,6 @@ commands:
       - run:
           name: Build Singularity Container
           command: |
-              if [[ -f "$BASH_ENV" ]]; then source "$BASH_ENV"; else source /tmp/singularity/.bashrc; fi
               singularity build <<parameters.image>> <<parameters.from-uri>>
 
 # JOBS #########################################################################

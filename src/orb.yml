@@ -270,8 +270,8 @@ commands:
 
       - save_cache:
           paths:
-            - /opt/singularity
-          key: v1-dependencies
+            - /opt/singularity/<< parameters.singularity-version >>
+          key: v1-dependencies-<< parameters.singularity-version >>
 
 
   alpine-install-3:
@@ -318,8 +318,8 @@ commands:
 
       - save_cache:
           paths:
-            - /opt/singularity
-          key: v1-dependencies
+            - /opt/singularity/<< parameters.singularity-version >>
+          key: v1-dependencies-<< parameters.singularity-version >>
 
 
   debian-install-2:
@@ -336,7 +336,7 @@ commands:
             mkdir -p /opt/singularity
             $SUDO chmod 7777 -R /opt/singularity
       - restore_cache:
-          keys: v1-dependencies
+          keys: v1-dependencies-<< parameters.singularity-version >>
       - run:
           name: Install Singularity (pre GoLang)
           command: |
@@ -372,8 +372,8 @@ commands:
 
       - save_cache:
           paths:
-            - /opt/singularity
-          key: v1-dependencies
+            - /opt/singularity/<< parameters.singularity-version >>
+          key: v1-dependencies-<< parameters.singularity-version >>
 
 
   build-image:

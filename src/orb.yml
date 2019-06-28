@@ -225,17 +225,8 @@ commands:
         type: string
         default: "3.2.1"
     steps:
-      - run:
-          name: Fix extraction of cache permissions
-          command: |
-            which sudo
-            if [[ "$?" == "0" ]]; then
-                if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-            fi
-            $SUDO mkdir -p /opt/singularity
-            $SUDO chmod 7777 -R /opt/singularity
       - restore_cache:
-          keys: v2-dependencies-<< parameters.singularity-version >>
+          keys: v3-dependencies-<< parameters.singularity-version >>
       - run:
           name: install Singularity 3.*
           command: |
@@ -250,10 +241,10 @@ commands:
                                      pkg-config
 
             # Create a directory in /opt for Singularity
-            $SUDO mkdir -p /opt/singularity
+            $SUDO mkdir -p $HOME/singularity
 
             # Source the version path
-            SINGULARITY_PREFIX="/opt/singularity/<< parameters.singularity-version >>"
+            SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
             echo 'export PATH="${SINGULARITY_PREFIX}/bin:$PATH"' >> "$BASH_ENV"
             source "$BASH_ENV"
 
@@ -273,8 +264,8 @@ commands:
 
       - save_cache:
           paths:
-            - /opt/singularity/<< parameters.singularity-version >>
-          key: v2-dependencies-<< parameters.singularity-version >>
+            - ~/singularity/<< parameters.singularity-version >>
+          key: v3-dependencies-<< parameters.singularity-version >>
 
 
   alpine-install-3:
@@ -285,17 +276,8 @@ commands:
         type: string
         default: "3.2.1"
     steps:
-      - run:
-          name: Fix extraction of cache permissions
-          command: |
-            which sudo
-            if [[ "$?" == "0" ]]; then
-                if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-            fi
-            $SUDO mkdir -p /opt/singularity
-            $SUDO chmod 7777 -R /opt/singularity
       - restore_cache:
-          keys: v2-dependencies-<< parameters.singularity-version >>
+          keys: v3-dependencies-<< parameters.singularity-version >>
       - run:
           name: Install Singularity (Version 3.* and up) in the Docker container
           command: |
@@ -307,10 +289,10 @@ commands:
             export GOPATH=/go
 
             # Create a directory in /opt for Singularity
-            $SUDO mkdir -p /opt/singularity
+            $SUDO mkdir -p $HOME/singularity
 
             # Source the version path
-            SINGULARITY_PREFIX="/opt/singularity/<< parameters.singularity-version >>"
+            SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
             echo 'export PATH="${SINGULARITY_PREFIX}/bin:$PATH"' >> "$BASH_ENV"
             source "$BASH_ENV"
 
@@ -324,8 +306,8 @@ commands:
 
       - save_cache:
           paths:
-            - /opt/singularity/<< parameters.singularity-version >>
-          key: v2-dependencies-<< parameters.singularity-version >>
+            - ~/singularity/<< parameters.singularity-version >>
+          key: v3-dependencies-<< parameters.singularity-version >>
 
 
   debian-install-2:
@@ -335,17 +317,11 @@ commands:
         type: string
         default: "2.6.1"
     steps:
+      # TODO just install in circle home
       - run:
           name: Fix extraction of cache permissions
-          command: |
-            which sudo
-            if [[ "$?" == "0" ]]; then
-                if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-            fi
-            $SUDO mkdir -p /opt/singularity
-            $SUDO chmod 7777 -R /opt/singularity
       - restore_cache:
-          keys: v2-dependencies-<< parameters.singularity-version >>
+          keys: v3-dependencies-<< parameters.singularity-version >>
       - run:
           name: Install Singularity (pre GoLang)
           command: |
@@ -366,10 +342,10 @@ commands:
                    python3-dev
 
             # Create a directory in /opt for Singularity
-            $SUDO mkdir -p /opt/singularity
+            $SUDO mkdir -p $HOME/singularity
 
             # Source the version path
-            SINGULARITY_PREFIX="/opt/singularity/<< parameters.singularity-version >>"
+            SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
             echo 'export PATH="${SINGULARITY_PREFIX}/bin:$PATH"' >> "$BASH_ENV"
             source "$BASH_ENV"
 
@@ -381,8 +357,8 @@ commands:
 
       - save_cache:
           paths:
-            - /opt/singularity/<< parameters.singularity-version >>
-          key: v2-dependencies-<< parameters.singularity-version >>
+            - ~/singularity/<< parameters.singularity-version >>
+          key: v3-dependencies-<< parameters.singularity-version >>
 
 
   build-image:

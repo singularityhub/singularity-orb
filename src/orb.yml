@@ -19,10 +19,10 @@ examples:
         singularity: singularity/singularity@1.0.0
 
       workflows:
-          install_alpine_docker_3_example:
-            jobs:
-              - singularity/install_alpine_docker_3:
-                  singularity-version: 3.2.1
+        install_alpine_docker_3_example:
+          jobs:
+            - singularity/install_alpine_docker_3:
+                singularity-version: 3.2.1
 
 
   install_debian_2:
@@ -38,10 +38,10 @@ examples:
         singularity: singularity/singularity@1.0.0
 
       workflows:
-          install_debian_2_example:
-            jobs:
-              - singularity/install_debian_2:
-                  singularity-version: 2.6.1
+        install_debian_2_example:
+          jobs:
+            - singularity/install_debian_2:
+                singularity-version: 2.6.1
 
 
   install_debian_3:
@@ -57,11 +57,11 @@ examples:
         singularity: singularity/singularity@1.0.0
 
       workflows:
-          install_debian_3_example:
-            jobs:
-              - singularity/install_debian_3:
-                  go-version: 1.11.5
-                  singularity-version: 3.2.1
+        install_debian_3_example:
+          jobs:
+            - singularity/install_debian_3:
+                go-version: 1.11.5
+                singularity-version: 3.2.1
 
 
   docker_cli:
@@ -79,10 +79,10 @@ examples:
         singularity: singularity/singularity@1.0.0
 
       workflows:
-          docker_cli_example:
-            jobs:
-              - singularity/docker_cli:
-                  singularity-version: 3.2.1-slim
+        docker_cli_example:
+          jobs:
+            - singularity/docker_cli:
+              singularity-version: 3.2.1-slim
 
 
   build_container_docker_base:
@@ -100,11 +100,11 @@ examples:
         singularity: singularity/singularity@1.0.0
 
       workflows:
-          build_container_docker_base_example:
-            jobs:
-              - singularity/build_container_docker_base:
-                  from-uri: docker://busybox
-                  image: busybox.sif
+        build_container_docker_base_example:
+          jobs:
+            - singularity/build_container_docker_base:
+                from-uri: docker://busybox
+                image: busybox.sif
 
 
   build_container_docker_custom_3:
@@ -119,13 +119,13 @@ examples:
         singularity: singularity/singularity@1.0.0
 
       workflows:
-          build_container_docker_custom_3_example:
-            jobs:
-              - singularity/build_container_docker_custom_3:
-                  singularity-version: 3.2.1
-                  go-version: 1.11.5
-                  from-uri: docker://busybox
-                  image: busybox.sif
+        build_container_docker_custom_3_example:
+          jobs:
+            - singularity/build_container_docker_custom_3:
+                singularity-version: 3.2.1
+                go-version: 1.11.5
+                from-uri: docker://busybox
+                image: busybox.sif
 
 
   build_container_custom_2:
@@ -140,12 +140,12 @@ examples:
         singularity: singularity/singularity@1.0.0
 
       workflows:
-          build_container_custom_2_example:
-            jobs:
-              - singularity/build_container_custom_2:
-                  singularity-version: 2.6.1
-                  from-uri: docker://busybox
-                  image: busybox.sif
+        build_container_custom_2_example:
+          jobs:
+            - singularity/build_container_custom_2:
+                singularity-version: 2.6.1
+                from-uri: docker://busybox
+                image: busybox.sif
 
 
   build_container_custom_3:
@@ -160,15 +160,13 @@ examples:
         singularity: singularity/singularity@1.0.0
 
       workflows:
-          build_container_custom_3_example:
-            jobs:
-              - singularity/build_container_custom_3:
-                  go-version: 1.11.5
-                  singularity-version: 3.2.1
-                  from-uri: docker://busybox
-                  image: busybox.sif
-
-
+        build_container_custom_3_example:
+          jobs:
+            - singularity/build_container_custom_3:
+                go-version: 1.11.5
+                singularity-version: 3.2.1
+                from-uri: docker://busybox
+                image: busybox.sif
 
 
 # EXECUTORS ####################################################################
@@ -417,7 +415,7 @@ jobs:
     steps:
       - alpine-install-3:
           singularity-version: <<parameters.singularity-version>>
-      - run: 
+      - run:
           name: Check install version
           command: |
             source "$BASH_ENV"
@@ -436,7 +434,7 @@ jobs:
     steps:
       - debian-install-2:
           singularity-version: <<parameters.singularity-version>>
-      - run: 
+      - run:
           name: Check install version
           command: |
             source "$BASH_ENV"
@@ -460,7 +458,7 @@ jobs:
           go-version: <<parameters.go-version>>
       - debian-install-3:
           singularity-version: <<parameters.singularity-version>>
-      - run: 
+      - run:
           name: Check install version
           command: |
             source "$BASH_ENV"

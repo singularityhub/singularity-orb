@@ -290,10 +290,10 @@ commands:
             export GOPATH=/go
 
             # Create a directory in /opt for Singularity
-            $SUDO mkdir -p $HOME/singularity
+            mkdir -p /tmp/singularity
 
             # Source the version path
-            SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
+            SINGULARITY_PREFIX="/tmp/singularity/<< parameters.singularity-version >>"
             echo 'export PATH="${SINGULARITY_PREFIX}/bin:$PATH"' >> "$BASH_ENV"
             echo 'export PATH="${SINGULARITY_PREFIX}/bin:$PATH"' >> "/tmp/singularity/.bashrc"
             source "$BASH_ENV"
@@ -343,7 +343,7 @@ commands:
             mkdir -p /tmp/singularity
 
             # Source the version path
-            SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
+            SINGULARITY_PREFIX="/tmp/singularity/<< parameters.singularity-version >>"
             echo 'export PATH="${SINGULARITY_PREFIX}/bin:$PATH"' >> "$BASH_ENV"
             echo 'export PATH="${SINGULARITY_PREFIX}/bin:$PATH"' >> "/tmp/singularity/.bashrc"
             source "$BASH_ENV"

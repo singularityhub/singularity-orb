@@ -207,16 +207,18 @@ commands:
       - run:
           name: Install GoLang
           command: |
-            if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-            if ! type "sudo" > /dev/null; then export SUDO=""; fi
-            cd /tmp
-            wget https://dl.google.com/go/go<< parameters.go-version >>.linux-amd64.tar.gz
-            tar -xzf go<< parameters.go-version >>.linux-amd64.tar.gz
-            export PATH=/tmp/go/bin:$PATH
-                $SUDO mkdir -p /go
-                $SUDO chmod -R 7777 /go
-            which go
-            export GOPATH=/go
+            if [ ! -f "/usr/local/bin/singularity" ]; then
+                if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+                if ! type "sudo" > /dev/null; then export SUDO=""; fi
+                cd /tmp
+                wget https://dl.google.com/go/go<< parameters.go-version >>.linux-amd64.tar.gz
+                tar -xzf go<< parameters.go-version >>.linux-amd64.tar.gz
+                export PATH=/tmp/go/bin:$PATH
+                    $SUDO mkdir -p /go
+                    $SUDO chmod -R 7777 /go
+                which go
+                export GOPATH=/go
+            fi
 
   debian-install-3:
     description: Install Singularity 3.* on Debian
@@ -226,7 +228,7 @@ commands:
         default: "3.2.1"
     steps:
       - restore_cache:
-          keys: v5-dependencies-<< parameters.singularity-version >>
+          keys: v6-dependencies-<< parameters.singularity-version >>
       - run:
           name: install Singularity 3.*
           command: |
@@ -256,8 +258,14 @@ commands:
 
       - save_cache:
           paths:
-            - /usr/local
-          key: v5-dependencies-<< parameters.singularity-version >>
+            - /usr/local/bin/singularity
+            - /usr/local/bin/run-singularity
+            - /usr/local/etc/singularity
+            - /usr/local/lib/singularity
+            - /usr/local/libexec/singularity
+            - /usr/local/include/singularity
+            - /usr/local/var/singularity
+          key: v6-dependencies-<< parameters.singularity-version >>
 
 
   alpine-install-3:
@@ -269,7 +277,7 @@ commands:
         default: "3.2.1"
     steps:
       - restore_cache:
-          keys: v5-dependencies-<< parameters.singularity-version >>
+          keys: v6-dependencies-<< parameters.singularity-version >>
       - run:
           name: Install Singularity (Version 3.* and up) in the Docker container
           command: |
@@ -280,7 +288,7 @@ commands:
             apk add --no-cache linux-headers build-base openssl-dev util-linux util-linux-dev
             export GOPATH=/go
 
-            if [ ! -f "${SINGULARITY_PREFIX}/bin/singularity" ]; then
+            if [ ! -f "/usr/local/bin/singularity" ]; then
                 mkdir -p ${GOPATH}/src/github.com/sylabs
                 cd ${GOPATH}/src/github.com/sylabs
                 wget https://github.com/sylabs/singularity/releases/download/v<< parameters.singularity-version >>/singularity-<< parameters.singularity-version >>.tar.gz
@@ -290,8 +298,14 @@ commands:
 
       - save_cache:
           paths:
-            - /usr/local
-          key: v5-dependencies-<< parameters.singularity-version >>
+            - /usr/local/bin/singularity
+            - /usr/local/bin/run-singularity
+            - /usr/local/etc/singularity
+            - /usr/local/lib/singularity
+            - /usr/local/libexec/singularity
+            - /usr/local/include/singularity
+            - /usr/local/var/singularity
+          key: v6-dependencies-<< parameters.singularity-version >>
 
   debian-install-2:
     description: Install Singularity Versions 2.* on a debian base
@@ -301,7 +315,7 @@ commands:
         default: "2.6.1"
     steps:
       - restore_cache:
-          keys: v5-dependencies-<< parameters.singularity-version >>
+          keys: v6-dependencies-<< parameters.singularity-version >>
       - run:
           name: Install Singularity (pre GoLang)
           command: |
@@ -321,7 +335,7 @@ commands:
                    libssl-dev \
                    python3-dev
 
-            if [ ! -f "${SINGULARITY_PREFIX}/bin/singularity" ]; then
+            if [ ! -f "/usr/local/bin/singularity" ]; then
                 wget https://github.com/sylabs/singularity/releases/download/<< parameters.singularity-version >>/singularity-<< parameters.singularity-version >>.tar.gz
                 tar -xzvf singularity-<< parameters.singularity-version >>.tar.gz
                 cd singularity-<< parameters.singularity-version >> && ./autogen.sh && ./configure --prefix="${SINGULARITY_PREFIX}" && make && $SUDO make install
@@ -330,7 +344,7 @@ commands:
       - save_cache:
           paths:
             - /usr/local
-          key: v5-dependencies-<< parameters.singularity-version >>
+          key: v6-dependencies-<< parameters.singularity-version >>
 
   build-image:
     description: Build a Singularity container using default (not Docker)

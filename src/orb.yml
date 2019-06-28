@@ -232,7 +232,7 @@ commands:
             mkdir -p /opt/singularity
             $SUDO chmod 7777 -R /opt/singularity
       - restore_cache:
-          keys: v1-dependencies-<< parameters.singularity-version >>
+          keys: v2-dependencies-<< parameters.singularity-version >>
       - run:
           name: install Singularity 3.*
           command: |
@@ -271,7 +271,7 @@ commands:
       - save_cache:
           paths:
             - /opt/singularity/<< parameters.singularity-version >>
-          key: v1-dependencies-<< parameters.singularity-version >>
+          key: v2-dependencies-<< parameters.singularity-version >>
 
 
   alpine-install-3:
@@ -289,7 +289,7 @@ commands:
             mkdir -p /opt/singularity
             $SUDO chmod 7777 -R /opt/singularity
       - restore_cache:
-          keys: v1-dependencies-<< parameters.singularity-version >>
+          keys: v2-dependencies-<< parameters.singularity-version >>
       - run:
           name: Install Singularity (Version 3.* and up) in the Docker container
           command: |
@@ -319,7 +319,7 @@ commands:
       - save_cache:
           paths:
             - /opt/singularity/<< parameters.singularity-version >>
-          key: v1-dependencies-<< parameters.singularity-version >>
+          key: v2-dependencies-<< parameters.singularity-version >>
 
 
   debian-install-2:
@@ -336,7 +336,7 @@ commands:
             mkdir -p /opt/singularity
             $SUDO chmod 7777 -R /opt/singularity
       - restore_cache:
-          keys: v1-dependencies-<< parameters.singularity-version >>
+          keys: v2-dependencies-<< parameters.singularity-version >>
       - run:
           name: Install Singularity (pre GoLang)
           command: |
@@ -373,7 +373,7 @@ commands:
       - save_cache:
           paths:
             - /opt/singularity/<< parameters.singularity-version >>
-          key: v1-dependencies-<< parameters.singularity-version >>
+          key: v2-dependencies-<< parameters.singularity-version >>
 
 
   build-image:

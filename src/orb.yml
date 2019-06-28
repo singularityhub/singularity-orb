@@ -279,7 +279,10 @@ commands:
       - run:
           name: Fix cache permissions for extraction
           command: |
-            if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            which sudo
+            if [[ "$?" == "0" ]]; then
+                if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            fi
             $SUDO mkdir -p $HOME/singularity
             $SUDO chown -R circleci $HOME/singularity
       - restore_cache:
@@ -327,7 +330,10 @@ commands:
       - run:
           name: Fix cache permissions for extraction
           command: |
-            if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            which sudo
+            if [[ "$?" == "0" ]]; then
+                if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            fi
             $SUDO mkdir -p $HOME/singularity
             $SUDO chown -R circleci $HOME/singularity
       - restore_cache:

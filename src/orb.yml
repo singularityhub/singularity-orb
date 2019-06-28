@@ -276,6 +276,12 @@ commands:
         type: string
         default: "3.2.1"
     steps:
+      - run:
+          name: Fix cache permissions for extraction
+          command: |
+            if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            $SUDO mkdir -p $HOME/singularity           
+            $SUDO chown -R circleci $HOME/singularity
       - restore_cache:
           keys: v3-dependencies-<< parameters.singularity-version >>
       - run:
@@ -318,6 +324,12 @@ commands:
         type: string
         default: "2.6.1"
     steps:
+      - run:
+          name: Fix cache permissions for extraction
+          command: |
+            if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            $SUDO mkdir -p $HOME/singularity           
+            $SUDO chown -R circleci $HOME/singularity
       - restore_cache:
           keys: v3-dependencies-<< parameters.singularity-version >>
       - run:

@@ -225,6 +225,12 @@ commands:
         type: string
         default: "3.2.1"
     steps:
+      - run:
+          name: Fix extraction of cache permissions
+          command: |
+            if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            mkdir -p /opt/singularity
+            $SUDO chmod 7777 -R /opt/singularity
       - restore_cache:
           keys: v1-dependencies
       - run:
@@ -276,11 +282,18 @@ commands:
         type: string
         default: "3.2.1"
     steps:
+      - run:
+          name: Fix extraction of cache permissions
+          command: |
+            if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            mkdir -p /opt/singularity
+            $SUDO chmod 7777 -R /opt/singularity
       - restore_cache:
           keys: v1-dependencies
       - run:
           name: Install Singularity (Version 3.* and up) in the Docker container
           command: |
+            if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
             apk update && \
             apk add --virtual automake build-base linux-headers libffi-dev
             apk add --no-cache bash git openssh gcc squashfs-tools sudo libtool gawk
@@ -316,6 +329,12 @@ commands:
         type: string
         default: "2.6.1"
     steps:
+      - run:
+          name: Fix extraction of cache permissions
+          command: |
+            if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            mkdir -p /opt/singularity
+            $SUDO chmod 7777 -R /opt/singularity
       - restore_cache:
           keys: v1-dependencies
       - run:

@@ -280,7 +280,7 @@ commands:
           name: Fix cache permissions for extraction
           command: |
             if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-            $SUDO mkdir -p $HOME/singularity           
+            $SUDO mkdir -p $HOME/singularity
             $SUDO chown -R circleci $HOME/singularity
       - restore_cache:
           keys: v3-dependencies-<< parameters.singularity-version >>
@@ -328,7 +328,7 @@ commands:
           name: Fix cache permissions for extraction
           command: |
             if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-            $SUDO mkdir -p $HOME/singularity           
+            $SUDO mkdir -p $HOME/singularity
             $SUDO chown -R circleci $HOME/singularity
       - restore_cache:
           keys: v3-dependencies-<< parameters.singularity-version >>

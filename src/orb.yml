@@ -232,7 +232,7 @@ commands:
             mkdir -p /opt/singularity
             $SUDO chmod 7777 -R /opt/singularity
       - restore_cache:
-          keys: v1-dependencies
+          keys: v1-dependencies-<< parameters.singularity-version >>
       - run:
           name: install Singularity 3.*
           command: |
@@ -289,7 +289,7 @@ commands:
             mkdir -p /opt/singularity
             $SUDO chmod 7777 -R /opt/singularity
       - restore_cache:
-          keys: v1-dependencies
+          keys: v1-dependencies-<< parameters.singularity-version >>
       - run:
           name: Install Singularity (Version 3.* and up) in the Docker container
           command: |

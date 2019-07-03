@@ -229,7 +229,7 @@ commands:
       arch:
         description: the architecture, shouldn't need to be set
         type: string
-        default: arch-{{ arch }}
+        default: "arch-{{ arch }}"
     steps:
       - restore_cache:
           keys: v7-dependencies-<< parameters.singularity-version >>-<< parameters.arch >>
@@ -282,7 +282,7 @@ commands:
       arch:
         description: the architecture, shouldn't need to be set
         type: string
-        default: arch-{{ arch }}
+        default: "arch-{{ arch }}"
     steps:
       - run:
          name: Prepare extraction folders
@@ -337,7 +337,7 @@ commands:
       arch:
         description: the architecture, shouldn't need to be set
         type: string
-        default: arch-{{ arch }}
+        default: "arch-{{ arch }}"
     steps:
       - run:
          name: Prepare extraction folders
@@ -439,6 +439,9 @@ jobs:
       GoLang) but is more limited in functionality due to being in a container.
     executor: alpine-docker
     parameters:
+      arch:
+        type: string
+        default: "arch-{{ arch }}"
       singularity-version:
         type: string
         default: "3.2.1"
@@ -461,6 +464,9 @@ jobs:
       singularity-version:
         type: string
         default: "2.6.1"
+      arch:
+        type: string
+        default: "arch-{{ arch }}"
     steps:
       - debian-install-2:
           singularity-version: <<parameters.singularity-version>>
@@ -483,6 +489,9 @@ jobs:
       go-version:
         type: string
         default: "1.11.5"
+      arch:
+        type: string
+        default: "arch-{{ arch }}"
     steps:
       - install-go:
           go-version: <<parameters.go-version>>
@@ -505,6 +514,9 @@ jobs:
         description: The Singularity version (tag on Docker Hub singularityware/singularity)
         type: string
         default: v3.2.1-slim
+      arch:
+        type: string
+        default: "arch-{{ arch }}"
     steps:
       - run:
           name: Check Singularity Version
@@ -555,6 +567,9 @@ jobs:
         description: The Singularity version
         type: string
         default: 3.2.1
+      arch:
+        type: string
+        default: "arch-{{ arch }}"
     steps:
       - install-go:
           go-version: <<parameters.go-version>>
@@ -581,6 +596,9 @@ jobs:
       singularity-version:
         type: string
         default: "2.6.1"
+      arch:
+        type: string
+        default: "arch-{{ arch }}"
     steps:
       - debian-install-2:
           singularity-version: <<parameters.singularity-version>>
@@ -608,6 +626,9 @@ jobs:
       singularity-version:
         type: string
         default: "3.2.1"
+      arch:
+        type: string
+        default: "arch-{{ arch }}"
     steps:
       - install-go:
           go-version: <<parameters.go-version>>

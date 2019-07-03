@@ -228,7 +228,7 @@ commands:
         default: "3.2.1"
     steps:
       - restore_cache:
-          keys: v7-dependencies-<< parameters.singularity-version >>
+          keys: v7-dependencies-<< parameters.singularity-version >>-{{ arch }}
       - run:
           name: install Singularity 3.*
           command: |
@@ -265,7 +265,7 @@ commands:
             - /usr/local/libexec/singularity
             - /usr/local/include/singularity
             - /usr/local/var/singularity
-          key: v7-dependencies-<< parameters.singularity-version >>
+          key: v7-dependencies-<< parameters.singularity-version >>-{{ arch }}
 
 
   alpine-install-3:
@@ -289,7 +289,7 @@ commands:
             $SUDO mkdir -p /usr/local/var/singularity
 
       - restore_cache:
-          keys: v7-dependencies-<< parameters.singularity-version >>
+          keys: v7-dependencies-<< parameters.singularity-version >>-{{ arch }}
       - run:
           name: Install Singularity (Version 3.* and up) in the Docker container
           command: |
@@ -318,7 +318,7 @@ commands:
             - /usr/local/libexec/singularity
             - /usr/local/include/singularity
             - /usr/local/var/singularity
-          key: v7-dependencies-<< parameters.singularity-version >>
+          key: v7-dependencies-<< parameters.singularity-version >>-{{ arch }}
 
   debian-install-2:
     description: Install Singularity Versions 2.* on a debian base
@@ -339,7 +339,7 @@ commands:
             $SUDO mkdir -p /usr/local/include/singularity
             $SUDO mkdir -p /usr/local/var/singularity
       - restore_cache:
-          keys: v7-dependencies-<< parameters.singularity-version >>
+          keys: v7-dependencies-<< parameters.singularity-version >>-{{ arch }}
       - run:
           name: Install Singularity (pre GoLang)
           command: |
@@ -368,8 +368,14 @@ commands:
 
       - save_cache:
           paths:
-            - /usr/local
-          key: v7-dependencies-<< parameters.singularity-version >>
+            - /usr/local/bin/singularity
+            - /usr/local/bin/run-singularity
+            - /usr/local/etc/singularity
+            - /usr/local/lib/singularity
+            - /usr/local/libexec/singularity
+            - /usr/local/include/singularity
+            - /usr/local/var/singularity
+          key: v7-dependencies-<< parameters.singularity-version >>-{{ arch }}
 
   build-image:
     description: Build a Singularity container using default (not Docker)

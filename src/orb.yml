@@ -226,9 +226,13 @@ commands:
       singularity-version:
         type: string
         default: "3.2.1"
+      arch:
+        description: the architecture, shouldn't need to be set
+        type: string
+        default: arch-{{ arch }}
     steps:
       - restore_cache:
-          keys: v7-dependencies-<< parameters.singularity-version >>-{{ arch }}
+          keys: v7-dependencies-<< parameters.singularity-version >>-<< parameters.arch >>
       - run:
           name: install Singularity 3.*
           command: |
@@ -265,7 +269,7 @@ commands:
             - /usr/local/libexec/singularity
             - /usr/local/include/singularity
             - /usr/local/var/singularity
-          key: v7-dependencies-<< parameters.singularity-version >>-{{ arch }}
+          key: v7-dependencies-<< parameters.singularity-version >>-<< parameters.arch >>
 
 
   alpine-install-3:
@@ -275,6 +279,10 @@ commands:
       singularity-version:
         type: string
         default: "3.2.1"
+      arch:
+        description: the architecture, shouldn't need to be set
+        type: string
+        default: arch-{{ arch }}
     steps:
       - run:
          name: Prepare extraction folders
@@ -289,7 +297,7 @@ commands:
             $SUDO mkdir -p /usr/local/var/singularity
 
       - restore_cache:
-          keys: v7-dependencies-<< parameters.singularity-version >>-{{ arch }}
+          keys: v7-dependencies-<< parameters.singularity-version >>-<< parameters.arch >>
       - run:
           name: Install Singularity (Version 3.* and up) in the Docker container
           command: |
@@ -318,7 +326,7 @@ commands:
             - /usr/local/libexec/singularity
             - /usr/local/include/singularity
             - /usr/local/var/singularity
-          key: v7-dependencies-<< parameters.singularity-version >>-{{ arch }}
+          key: v7-dependencies-<< parameters.singularity-version >>-<< parameters.arch >>
 
   debian-install-2:
     description: Install Singularity Versions 2.* on a debian base
@@ -326,6 +334,10 @@ commands:
       singularity-version:
         type: string
         default: "2.6.1"
+      arch:
+        description: the architecture, shouldn't need to be set
+        type: string
+        default: arch-{{ arch }}
     steps:
       - run:
          name: Prepare extraction folders
@@ -339,7 +351,7 @@ commands:
             $SUDO mkdir -p /usr/local/include/singularity
             $SUDO mkdir -p /usr/local/var/singularity
       - restore_cache:
-          keys: v7-dependencies-<< parameters.singularity-version >>-{{ arch }}
+          keys: v7-dependencies-<< parameters.singularity-version >>-<< parameters.arch >>
       - run:
           name: Install Singularity (pre GoLang)
           command: |
@@ -375,7 +387,7 @@ commands:
             - /usr/local/libexec/singularity
             - /usr/local/include/singularity
             - /usr/local/var/singularity
-          key: v7-dependencies-<< parameters.singularity-version >>-{{ arch }}
+          key: v7-dependencies-<< parameters.singularity-version >>-<< parameters.arch >>
 
   build-image:
     description: Build a Singularity container using default (not Docker)

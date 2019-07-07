@@ -226,13 +226,9 @@ commands:
       singularity-version:
         type: string
         default: "3.2.1"
-      arch:
-        description: the architecture, shouldn't need to be set
-        type: string
-        default: "arch-{{ arch }}"
     steps:
       - restore_cache:
-          keys: v7-dependencies-<< parameters.singularity-version >>-<< parameters.arch >>
+          keys: v8-dependencies-<< parameters.singularity-version >>
       - run:
           name: install Singularity 3.*
           command: |
@@ -246,7 +242,13 @@ commands:
                                      libseccomp-dev \
                                      pkg-config
 
-            if [ ! -f "/usr/local/bin/singularity" ]; then
+            mkdir -p $HOME/singularity
+            SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
+            echo 'export PATH="'"$SINGULARITY_PREFIX"'/bin:$PATH"' >> "$BASH_ENV"
+            echo 'export PATH="'"$SINGULARITY_PREFIX"'/bin:$PATH"' >> "$HOME/.bashrc"
+            source "$BASH_ENV"
+
+            if [ ! -f "${SINGULARITY_PREFIX}/bin/singularity" ]; then
                 export GOPATH=/go
                 export PATH=/tmp/go/bin:$PATH
                 go get -u github.com/golang/dep/cmd/dep && \
@@ -262,71 +264,8 @@ commands:
 
       - save_cache:
           paths:
-            - /usr/local/bin/singularity
-            - /usr/local/bin/run-singularity
-            - /usr/local/etc/singularity
-            - /usr/local/lib/singularity
-            - /usr/local/libexec/singularity
-            - /usr/local/include/singularity
-            - /usr/local/var/singularity
-          key: v7-dependencies-<< parameters.singularity-version >>-<< parameters.arch >>
-
-
-  alpine-install-3:
-    description: |
-      Install a custom version of Singularity with apk
-    parameters:
-      singularity-version:
-        type: string
-        default: "3.2.1"
-      arch:
-        description: the architecture, shouldn't need to be set
-        type: string
-        default: "arch-{{ arch }}"
-    steps:
-      - run:
-         name: Prepare extraction folders
-         command: |
-            if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-            if ! type "sudo" > /dev/null; then export SUDO=""; fi
-            $SUDO chmod -R 777 /usr/local
-            $SUDO mkdir -p /usr/local/etc/singularity
-            $SUDO mkdir -p /usr/local/lib/singularity
-            $SUDO mkdir -p /usr/local/libexec/singularity
-            $SUDO mkdir -p /usr/local/include/singularity
-            $SUDO mkdir -p /usr/local/var/singularity
-
-      - restore_cache:
-          keys: v7-dependencies-<< parameters.singularity-version >>-<< parameters.arch >>
-      - run:
-          name: Install Singularity (Version 3.* and up) in the Docker container
-          command: |
-            if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-            apk update && \
-            apk add --virtual automake build-base linux-headers libffi-dev
-            apk add --no-cache bash git openssh gcc squashfs-tools sudo libtool gawk
-            apk add --no-cache linux-headers build-base openssl-dev util-linux util-linux-dev
-            export GOPATH=/go
-
-            if [ ! -f "/usr/local/bin/singularity" ]; then
-                mkdir -p ${GOPATH}/src/github.com/sylabs
-                cd ${GOPATH}/src/github.com/sylabs
-                wget https://github.com/sylabs/singularity/releases/download/v<< parameters.singularity-version >>/singularity-<< parameters.singularity-version >>.tar.gz
-                tar -xzvf singularity-<< parameters.singularity-version >>.tar.gz
-                cd singularity && ./mconfig -p /usr/local && make -C builddir && $SUDO make -C builddir install
-            fi
-            $SUDO chmod -R 777 /usr/local
-
-      - save_cache:
-          paths:
-            - /usr/local/bin/singularity
-            - /usr/local/bin/run-singularity
-            - /usr/local/etc/singularity
-            - /usr/local/lib/singularity
-            - /usr/local/libexec/singularity
-            - /usr/local/include/singularity
-            - /usr/local/var/singularity
-          key: v7-dependencies-<< parameters.singularity-version >>-<< parameters.arch >>
+            - /home/circleci/<< parameters.singularity-version >>
+          key: v8-dependencies-<< parameters.singularity-version >>
 
   debian-install-2:
     description: Install Singularity Versions 2.* on a debian base
@@ -334,24 +273,9 @@ commands:
       singularity-version:
         type: string
         default: "2.6.1"
-      arch:
-        description: the architecture, shouldn't need to be set
-        type: string
-        default: "arch-{{ arch }}"
     steps:
-      - run:
-         name: Prepare extraction folders
-         command: |
-            if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-            if ! type "sudo" > /dev/null; then export SUDO=""; fi
-            $SUDO chmod -R 777 /usr/local
-            $SUDO mkdir -p /usr/local/etc/singularity
-            $SUDO mkdir -p /usr/local/lib/singularity
-            $SUDO mkdir -p /usr/local/libexec/singularity
-            $SUDO mkdir -p /usr/local/include/singularity
-            $SUDO mkdir -p /usr/local/var/singularity
       - restore_cache:
-          keys: v7-dependencies-<< parameters.singularity-version >>-<< parameters.arch >>
+          keys: v8-dependencies-<< parameters.singularity-version >>
       - run:
           name: Install Singularity (pre GoLang)
           command: |
@@ -371,23 +295,55 @@ commands:
                    libssl-dev \
                    python3-dev
 
-            if [ ! -f "/usr/local/bin/singularity" ]; then
+            mkdir -p $HOME/singularity
+            SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
+            echo 'export PATH="'"$SINGULARITY_PREFIX"'/bin:$PATH"' >> "$BASH_ENV"
+            echo 'export PATH="'"$SINGULARITY_PREFIX"'/bin:$PATH"' >> "$HOME/.bashrc"
+            source "$BASH_ENV"
+
+            if [ ! -f "${SINGULARITY_PREFIX}/bin/singularity" ]; then
                 wget https://github.com/sylabs/singularity/releases/download/<< parameters.singularity-version >>/singularity-<< parameters.singularity-version >>.tar.gz
                 tar -xzvf singularity-<< parameters.singularity-version >>.tar.gz
                 cd singularity-<< parameters.singularity-version >> && ./autogen.sh && ./configure --prefix="${SINGULARITY_PREFIX}" && make && $SUDO make install
             fi
-            $SUDO chmod -R 777 /usr/local
 
       - save_cache:
           paths:
-            - /usr/local/bin/singularity
-            - /usr/local/bin/run-singularity
-            - /usr/local/etc/singularity
-            - /usr/local/lib/singularity
-            - /usr/local/libexec/singularity
-            - /usr/local/include/singularity
-            - /usr/local/var/singularity
-          key: v7-dependencies-<< parameters.singularity-version >>-<< parameters.arch >>
+            - /home/circleci/singularity/<<parameters.singularity-version>>
+          key: v8-dependencies-<<parameters.singularity-version>>
+
+# This install cannot use a cache, $HOME in Docker != $HOME on Circle
+
+  alpine-install-3:
+    description: |
+      Install a custom version of Singularity with apk. No cache is used,
+      given that we are installing into a Docker container (with $HOME as /root)
+    parameters:
+      singularity-version:
+        type: string
+        default: "3.2.1"
+    steps:
+      - run:
+          name: Install Singularity (Version 3.* and up) in the Docker container
+          command: |
+            if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            apk update && \
+            apk add --virtual automake build-base linux-headers libffi-dev
+            apk add --no-cache bash git openssh gcc squashfs-tools sudo libtool gawk
+            apk add --no-cache linux-headers build-base openssl-dev util-linux util-linux-dev
+            export GOPATH=/go
+
+            if [ ! -f "/usr/local/bin/singularity" ]; then
+                mkdir -p ${GOPATH}/src/github.com/sylabs
+                cd ${GOPATH}/src/github.com/sylabs
+                wget https://github.com/sylabs/singularity/releases/download/v<< parameters.singularity-version >>/singularity-<< parameters.singularity-version >>.tar.gz
+                tar -xzvf singularity-<< parameters.singularity-version >>.tar.gz
+                cd singularity && ./mconfig -p /usr/local && make -C builddir && $SUDO make -C builddir install
+            fi
+
+
+# Building images
+
 
   build-image:
     description: Build a Singularity container using default (not Docker)
@@ -432,27 +388,7 @@ commands:
 
 jobs:
 
-  install_alpine_docker_3:
-    description: |
-      Install Singularity 3.* on the an alpine Docker base (comes with goLang)
-      This combination will build quickly (we use an alpine base that comes with
-      GoLang) but is more limited in functionality due to being in a container.
-    executor: alpine-docker
-    parameters:
-      arch:
-        type: string
-        default: "arch-{{ arch }}"
-      singularity-version:
-        type: string
-        default: "3.2.1"
-    steps:
-      - alpine-install-3:
-          singularity-version: <<parameters.singularity-version>>
-      - run:
-          name: Check install version
-          command: |
-            source "$BASH_ENV"
-            singularity --version
+  # Debian builds are below, we can use CircleCI Cache
 
   install_debian_2:
     description: |
@@ -464,9 +400,6 @@ jobs:
       singularity-version:
         type: string
         default: "2.6.1"
-      arch:
-        type: string
-        default: "arch-{{ arch }}"
     steps:
       - debian-install-2:
           singularity-version: <<parameters.singularity-version>>
@@ -489,9 +422,6 @@ jobs:
       go-version:
         type: string
         default: "1.11.5"
-      arch:
-        type: string
-        default: "arch-{{ arch }}"
     steps:
       - install-go:
           go-version: <<parameters.go-version>>
@@ -501,6 +431,81 @@ jobs:
           name: Check install version
           command: |
             if [[ -f "$BASH_ENV" ]]; then source "$BASH_ENV"; else source $HOME/.bashrc; fi
+            singularity --version
+
+
+  build_container_custom_2:
+    description: |
+        Build a Singularity 2.* Container on a debian (machine) base. This means
+        that we install Singularity from source
+    executor: machine
+    parameters:
+      from-uri:
+        description: The Singularity recipe path or docker:// uri to build from.
+        type: string
+        default: Singularity
+      image:
+        description: The image binary to build (e.g., container.sif)
+        type: string
+        default: container.sif
+      singularity-version:
+        type: string
+        default: "2.6.1"
+    steps:
+      - debian-install-2:
+          singularity-version: <<parameters.singularity-version>>
+      - build-image:
+          from-uri: <<parameters.from-uri>>
+          image: <<parameters.image>>
+
+  build_container_custom_3:
+    description: |
+      Build a Singularity Container version 3.* base on a debian base. This
+      option will give you the most freedom to use the container after building.
+    executor: machine
+    parameters:
+      from-uri:
+        description: The Singularity recipe path or docker:// uri to build from.
+        type: string
+        default: Singularity
+      image:
+        description: The image binary to build (e.g., container.sif)
+        type: string
+        default: container.sif
+      go-version:
+        type: string
+        default: "1.11.5"
+      singularity-version:
+        type: string
+        default: "3.2.1"
+    steps:
+      - install-go:
+          go-version: <<parameters.go-version>>
+      - debian-install-3:
+          singularity-version: <<parameters.singularity-version>>
+      - build-image:
+          from-uri: <<parameters.from-uri>>
+          image: <<parameters.image>>
+
+# Docker base builds are below, we cannot use CircleCI Cache
+
+  install_alpine_docker_3:
+    description: |
+      Install Singularity 3.* on the an alpine Docker base (comes with goLang)
+      This combination will build quickly (we use an alpine base that comes with
+      GoLang) but is more limited in functionality due to being in a container.
+    executor: alpine-docker
+    parameters:
+      singularity-version:
+        type: string
+        default: "3.2.1"
+    steps:
+      - alpine-install-3:
+          singularity-version: <<parameters.singularity-version>>
+      - run:
+          name: Check install version
+          command: |
+            source "$BASH_ENV"
             singularity --version
 
   docker_cli:
@@ -514,9 +519,6 @@ jobs:
         description: The Singularity version (tag on Docker Hub singularityware/singularity)
         type: string
         default: v3.2.1-slim
-      arch:
-        type: string
-        default: "arch-{{ arch }}"
     steps:
       - run:
           name: Check Singularity Version
@@ -567,72 +569,10 @@ jobs:
         description: The Singularity version
         type: string
         default: 3.2.1
-      arch:
-        type: string
-        default: "arch-{{ arch }}"
     steps:
       - install-go:
           go-version: <<parameters.go-version>>
       - alpine-install-3:
-          singularity-version: <<parameters.singularity-version>>
-      - build-image:
-          from-uri: <<parameters.from-uri>>
-          image: <<parameters.image>>
-
-  build_container_custom_2:
-    description: |
-        Build a Singularity 2.* Container on a debian (machine) base. This means
-        that we install Singularity from source
-    executor: machine
-    parameters:
-      from-uri:
-        description: The Singularity recipe path or docker:// uri to build from.
-        type: string
-        default: Singularity
-      image:
-        description: The image binary to build (e.g., container.sif)
-        type: string
-        default: container.sif
-      singularity-version:
-        type: string
-        default: "2.6.1"
-      arch:
-        type: string
-        default: "arch-{{ arch }}"
-    steps:
-      - debian-install-2:
-          singularity-version: <<parameters.singularity-version>>
-      - build-image:
-          from-uri: <<parameters.from-uri>>
-          image: <<parameters.image>>
-
-  build_container_custom_3:
-    description: |
-      Build a Singularity Container version 3.* base on a debian base. This
-      option will give you the most freedom to use the container after building.
-    executor: machine
-    parameters:
-      from-uri:
-        description: The Singularity recipe path or docker:// uri to build from.
-        type: string
-        default: Singularity
-      image:
-        description: The image binary to build (e.g., container.sif)
-        type: string
-        default: container.sif
-      go-version:
-        type: string
-        default: "1.11.5"
-      singularity-version:
-        type: string
-        default: "3.2.1"
-      arch:
-        type: string
-        default: "arch-{{ arch }}"
-    steps:
-      - install-go:
-          go-version: <<parameters.go-version>>
-      - debian-install-3:
           singularity-version: <<parameters.singularity-version>>
       - build-image:
           from-uri: <<parameters.from-uri>>

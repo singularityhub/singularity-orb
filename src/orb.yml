@@ -228,7 +228,7 @@ commands:
         default: "3.2.1"
     steps:
       - restore_cache:
-          keys: v8-dependencies-<< parameters.singularity-version >>
+          keys: v9-dependencies-<< parameters.singularity-version >>
       - run:
           name: install Singularity 3.*
           command: |
@@ -264,8 +264,8 @@ commands:
 
       - save_cache:
           paths:
-            - /home/circleci/<< parameters.singularity-version >>
-          key: v8-dependencies-<< parameters.singularity-version >>
+            - /home/circleci/singularity/<< parameters.singularity-version >>
+          key: v9-dependencies-<< parameters.singularity-version >>
 
   debian-install-2:
     description: Install Singularity Versions 2.* on a debian base
@@ -275,7 +275,7 @@ commands:
         default: "2.6.1"
     steps:
       - restore_cache:
-          keys: v8-dependencies-<< parameters.singularity-version >>
+          keys: v9-dependencies-<< parameters.singularity-version >>
       - run:
           name: Install Singularity (pre GoLang)
           command: |
@@ -310,7 +310,7 @@ commands:
       - save_cache:
           paths:
             - /home/circleci/singularity/<<parameters.singularity-version>>
-          key: v8-dependencies-<<parameters.singularity-version>>
+          key: v9-dependencies-<<parameters.singularity-version>>
 
 # This install cannot use a cache, $HOME in Docker != $HOME on Circle
 

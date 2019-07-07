@@ -21,7 +21,6 @@ the CircleCI client, and then validate it locally:
 ```bash
 $ circleci orb validate src/orb.yml
 ```
-
 and also deployed a development alpha version
 
 ```bash

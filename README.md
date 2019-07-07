@@ -11,6 +11,7 @@ that version.
 
  - 1.0.3: coincides with Singularity 3.1.0 and 2.6.1 as default. There is a bug with the singularity-version variable so it doesn't change from 3.1.0.
  - 1.0.4: bug above is fixed, and default Singularity for 3.x is 3.2.1.
+ - 1.0.5: cache added for Singularity (debian bases, not Docker) based on Singularity version.
 
 ## Development
 
@@ -22,6 +23,7 @@ $ circleci orb validate src/orb.yml
 ```
 
 and also deployed a development alpha version
+
 
 ```bash
 $ circleci orb publish src/orb.yml singularity/singularity@dev:alpha

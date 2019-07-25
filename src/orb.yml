@@ -282,8 +282,9 @@ commands:
       - run:
           name: Fix cache permissions for extraction
           command: |
-            which sudo
-            if [[ "$?" == "0" ]]; then
+            NOSUDO=false
+            which sudo || NOSUDO=true
+            if [[ "$NOSUDO" == "false" ]]; then
                 if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
             fi
             echo "$SUDO mkdir -p $HOME/singularity"
@@ -337,8 +338,9 @@ commands:
       - run:
           name: Fix cache permissions for extraction
           command: |
-            which sudo
-            if [[ "$?" == "0" ]]; then
+            NOSUDO=false
+            which sudo || NOSUDO=true
+            if [[ "$NOSUDO" == "false" ]]; then
                 if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
             fi
             echo "$SUDO mkdir -p $HOME/singularity"

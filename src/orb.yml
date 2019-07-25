@@ -377,7 +377,7 @@ commands:
             if [ -d "/opt/$(whoami)/.pyenv/libexec" ]; then
                 echo "export PATH='$PATH:/opt/$(whoami)/.pyenv/libexec'" >> "$BASH_ENV"
             fi
- 
+
             if [ -f "$BASH_ENV" ]; then
                 source $BASH_ENV
             fi

@@ -163,6 +163,6 @@ workflows:
             - test-build-docker-custom-3
             - test-build-custom-2
           filters:
-             branches:
-               only:
-                 - master
+            branches:
+              only:
+                - master

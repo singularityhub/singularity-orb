@@ -393,7 +393,9 @@ commands:
             fi
             SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
             $SUDO chown -R root:root $HOME/singularity
-            $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/starter-suid
+            $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/start-suid
+            $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/action-suid
+            $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/mount-suid
       - run:
           name: Install Singularity (pre GoLang)
           command: |

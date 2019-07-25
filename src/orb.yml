@@ -456,11 +456,15 @@ commands:
       - run:
           name: Build Singularity Container
           command: |
-              if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-              if [ -f "$BASH_ENV" ]; then
-                source $BASH_ENV
-              fi
-              $SUDO singularity build <<parameters.image>> <<parameters.from-uri>>
+            NOSUDO=false
+            which sudo || NOSUDO=true
+            if [[ "$NOSUDO" == "false" ]]; then
+                if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            fi
+            if [ -f "$BASH_ENV" ]; then
+              source $BASH_ENV
+            fi
+            $SUDO singularity build <<parameters.image>> <<parameters.from-uri>>
 
   build-image-docker:
     description: Build a Singularity container using Docker
@@ -480,10 +484,10 @@ commands:
       - run:
           name: Build Singularity Container
           command: |
-              if [ -f "$BASH_ENV" ]; then
-                  source $BASH_ENV
-              fi
-              singularity build <<parameters.image>> <<parameters.from-uri>>
+            if [ -f "$BASH_ENV" ]; then
+                source $BASH_ENV
+            fi
+            singularity build <<parameters.image>> <<parameters.from-uri>>
 
 
 # JOBS #########################################################################
@@ -528,8 +532,16 @@ jobs:
       - run:
           name: Check install version
           command: |
+            NOSUDO=false
+            which sudo || NOSUDO=true
+            if [[ "$NOSUDO" == "false" ]]; then
+                if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            fi
             if [ -f "$BASH_ENV" ]; then
                 source $BASH_ENV
+            fi
+            if [[ -f "/etc/sudoers" ]]; then
+                $SUDO sed -i -e 's/^Defaults\tsecure_path.*$//' /etc/sudoers
             fi
             singularity --version
 
@@ -554,8 +566,16 @@ jobs:
       - run:
           name: Check install version
           command: |
+            NOSUDO=false
+            which sudo || NOSUDO=true
+            if [[ "$NOSUDO" == "false" ]]; then
+                if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            fi
             if [ -f "$BASH_ENV" ]; then
                 source $BASH_ENV
+            fi
+            if [[ -f "/etc/sudoers" ]]; then
+                $SUDO sed -i -e 's/^Defaults\tsecure_path.*$//' /etc/sudoers
             fi
             singularity --version
 

@@ -224,6 +224,9 @@ commands:
       singularity-version:
         type: string
         default: "3.2.1"
+      machine-type:
+        type: string
+        default: "machine"
     steps:
       - run:
           name: Fix cache permissions for extraction
@@ -237,12 +240,9 @@ commands:
             echo "$SUDO mkdir -p $HOME/singularity"
             $SUDO mkdir -p $HOME/singularity /root/singularity
             echo "$SUDO chown -R $(whoami) $HOME/singularity"
-
-            # Allows for support for builds that use docker and local (edge case)
             $SUDO chown -R $(whoami) $HOME/singularity
-            $SUDO chown -R $(whoami) /root/singularity
       - restore_cache:
-          keys: v13-dependencies-<< parameters.singularity-version >>
+          keys: v1-dependencies-<< parameters.machine-type >>-<< parameters.singularity-version >>
       - run:
           name: install Singularity 3.*
           command: |
@@ -290,12 +290,6 @@ commands:
             fi
 
             SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
-
-            # If Singularity installed in roots home, move
-            if [[ -d "/root/singularity/<< parameters.singularity-version>>" ]]; then
-                $SUDO mv "/root/singularity/<< parameters.singularity-version>>" "${SINGULARITY_PREFIX}"
-            fi
-
             $SUDO chown -R root:root $HOME/singularity
             $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/starter-suid
 
@@ -305,7 +299,7 @@ commands:
       - save_cache:
           paths:
             - ~/singularity/<< parameters.singularity-version >>
-          key: v13-dependencies-<< parameters.singularity-version >>
+          key: v1-dependencies-<< parameters.machine-type >>-<< parameters.singularity-version >>
 
 
   alpine-install-3:
@@ -315,6 +309,9 @@ commands:
       singularity-version:
         type: string
         default: "3.2.1"
+      machine-type:
+        type: string
+        default: "machine"
     steps:
       - run:
           name: Fix cache permissions for extraction
@@ -329,7 +326,7 @@ commands:
             echo "$SUDO chown -R $(whoami) $HOME/singularity"
             $SUDO chown -R $(whoami) $HOME/singularity
       - restore_cache:
-          keys: v13-dependencies-<< parameters.singularity-version >>
+          keys: v1-dependencies-<< parameters.machine-type >>-<< parameters.singularity-version >>
       - run:
           name: Install Singularity (Version 3.* and up) in the Docker container
           command: |
@@ -372,7 +369,7 @@ commands:
       - save_cache:
           paths:
             - ~/singularity/<< parameters.singularity-version >>
-          key: v13-dependencies-<< parameters.singularity-version >>
+          key: v1-dependencies-<< parameters.machine-type >>-<< parameters.singularity-version >>
 
 
   debian-install-2:
@@ -381,6 +378,9 @@ commands:
       singularity-version:
         type: string
         default: "2.6.1"
+      machine-type:
+        type: string
+        default: "machine"
     steps:
       - run:
           name: Fix cache permissions for extraction
@@ -395,7 +395,7 @@ commands:
             echo "$SUDO chown -R $(whoami) $HOME/singularity"
             $SUDO chown -R $(whoami) $HOME/singularity
       - restore_cache:
-          keys: v13-dependencies-<< parameters.singularity-version >>
+          keys: v1-dependencies-<< parameters.machine-type >>-<< parameters.singularity-version >>
       - run:
           name: Install Singularity (pre GoLang)
           command: |
@@ -457,8 +457,7 @@ commands:
       - save_cache:
           paths:
             - ~/singularity/<< parameters.singularity-version >>
-          key: v13-dependencies-<< parameters.singularity-version >>
-
+          key: v1-dependencies-<< parameters.machine-type >>-<< parameters.singularity-version >>
 
   build-image:
     description: Build a Singularity container using default (not Docker)
@@ -524,6 +523,9 @@ jobs:
       singularity-version:
         type: string
         default: "3.2.1"
+      machine-type:
+        type: string
+        default: "docker"
     steps:
       - alpine-install-3:
           singularity-version: <<parameters.singularity-version>>
@@ -545,9 +547,13 @@ jobs:
       singularity-version:
         type: string
         default: "2.6.1"
+      machine-type:
+        type: string
+        default: "machine"
     steps:
       - debian-install-2:
           singularity-version: <<parameters.singularity-version>>
+          machine-type: <<parameters.machine-type>>
       - run:
           name: Check install version
           command: |
@@ -569,11 +575,15 @@ jobs:
       go-version:
         type: string
         default: "1.11.5"
+      machine-type:
+        type: string
+        default: "machine"
     steps:
       - install-go:
           go-version: <<parameters.go-version>>
       - debian-install-3:
           singularity-version: <<parameters.singularity-version>>
+          machine-type: <<parameters.machine-type>>
       - run:
           name: Check install version
           command: |
@@ -616,11 +626,14 @@ jobs:
         description: The image binary to build (e.g., container.sif)
         type: string
         default: container.sif
+      machine-type:
+        type: string
+        default: docker
+
     steps:
       - build-image-docker:
           from-uri: <<parameters.from-uri>>
           image: <<parameters.image>>
-
 
   build_container_docker_custom_3:
     description: |
@@ -643,11 +656,15 @@ jobs:
         description: The Singularity version
         type: string
         default: 3.2.1
+      machine-type:
+        type: string
+        default: docker
     steps:
       - install-go:
           go-version: <<parameters.go-version>>
       - alpine-install-3:
           singularity-version: <<parameters.singularity-version>>
+          machine-type: <<parameters.machine-type>>
       - build-image:
           from-uri: <<parameters.from-uri>>
           image: <<parameters.image>>
@@ -669,9 +686,13 @@ jobs:
       singularity-version:
         type: string
         default: "2.6.1"
+      machine-type:
+        type: string
+        default: "machine"
     steps:
       - debian-install-2:
           singularity-version: <<parameters.singularity-version>>
+          machine-type: <<parameters.machine-type>>
       - build-image:
           from-uri: <<parameters.from-uri>>
           image: <<parameters.image>>
@@ -696,11 +717,15 @@ jobs:
       singularity-version:
         type: string
         default: "3.2.1"
+      machine-type:
+        type: string
+        default: "machine"
     steps:
       - install-go:
           go-version: <<parameters.go-version>>
       - debian-install-3:
           singularity-version: <<parameters.singularity-version>>
+          machine-type: <<parameters.machine-type>>
       - build-image:
           from-uri: <<parameters.from-uri>>
           image: <<parameters.image>>

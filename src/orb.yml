@@ -238,7 +238,18 @@ commands:
             echo "$SUDO chown -R $(whoami) $HOME/singularity"
             $SUDO chown -R $(whoami) $HOME/singularity
       - restore_cache:
-          keys: v12-dependencies-<< parameters.singularity-version >>
+          keys: v13-dependencies-<< parameters.singularity-version >>
+      - run:
+          name: Fix cache permissions for root
+          command: |
+            NOSUDO=false
+            which sudo || NOSUDO=true
+            if [[ "$NOSUDO" == "false" ]]; then
+                if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            fi
+            SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
+            $SUDO chown -R root:root $HOME/singularity
+            $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/starter-suid
       - run:
           name: install Singularity 3.*
           command: |
@@ -280,7 +291,7 @@ commands:
       - save_cache:
           paths:
             - ~/singularity/<< parameters.singularity-version >>
-          key: v12-dependencies-<< parameters.singularity-version >>
+          key: v13-dependencies-<< parameters.singularity-version >>
 
 
   alpine-install-3:
@@ -304,7 +315,18 @@ commands:
             echo "$SUDO chown -R $(whoami) $HOME/singularity"
             $SUDO chown -R $(whoami) $HOME/singularity
       - restore_cache:
-          keys: v12-dependencies-<< parameters.singularity-version >>
+          keys: v13-dependencies-<< parameters.singularity-version >>
+      - run:
+          name: Fix cache permissions for root
+          command: |
+            NOSUDO=false
+            which sudo || NOSUDO=true
+            if [[ "$NOSUDO" == "false" ]]; then
+                if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            fi
+            SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
+            $SUDO chown -R root:root $HOME/singularity
+            $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/starter-suid
       - run:
           name: Install Singularity (Version 3.* and up) in the Docker container
           command: |
@@ -337,7 +359,7 @@ commands:
       - save_cache:
           paths:
             - ~/singularity/<< parameters.singularity-version >>
-          key: v12-dependencies-<< parameters.singularity-version >>
+          key: v13-dependencies-<< parameters.singularity-version >>
 
 
   debian-install-2:
@@ -360,7 +382,18 @@ commands:
             echo "$SUDO chown -R $(whoami) $HOME/singularity"
             $SUDO chown -R $(whoami) $HOME/singularity
       - restore_cache:
-          keys: v12-dependencies-<< parameters.singularity-version >>
+          keys: v13-dependencies-<< parameters.singularity-version >>
+      - run:
+          name: Fix cache permissions for root
+          command: |
+            NOSUDO=false
+            which sudo || NOSUDO=true
+            if [[ "$NOSUDO" == "false" ]]; then
+                if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            fi
+            SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
+            $SUDO chown -R root:root $HOME/singularity
+            $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/starter-suid
       - run:
           name: Install Singularity (pre GoLang)
           command: |
@@ -406,7 +439,7 @@ commands:
       - save_cache:
           paths:
             - ~/singularity/<< parameters.singularity-version >>
-          key: v12-dependencies-<< parameters.singularity-version >>
+          key: v13-dependencies-<< parameters.singularity-version >>
 
 
   build-image:

@@ -233,10 +233,14 @@ commands:
             if [[ "$NOSUDO" == "false" ]]; then
                 if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
             fi
+
             echo "$SUDO mkdir -p $HOME/singularity"
-            $SUDO mkdir -p $HOME/singularity
+            $SUDO mkdir -p $HOME/singularity /root/singularity
             echo "$SUDO chown -R $(whoami) $HOME/singularity"
+
+            # Allows for support for builds that use docker and local (edge case)
             $SUDO chown -R $(whoami) $HOME/singularity
+            $SUDO chown -R $(whoami) /root/singularity            
       - restore_cache:
           keys: v13-dependencies-<< parameters.singularity-version >>
       - run:
@@ -284,9 +288,20 @@ commands:
             if [[ "$NOSUDO" == "false" ]]; then
                 if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
             fi
+
             SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
+
+            # If Singularity installed in roots home, move
+            if [[ -d "/root/singularity/<< parameters.singularity-version>>" ]]; then
+                $SUDO mv "/root/singularity/<< parameters.singularity-version>>" "${SINGULARITY_PREFIX}"
+            fi
+
             $SUDO chown -R root:root $HOME/singularity
             $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/starter-suid
+
+            if [[ -f "/etc/sudoers" ]]; then
+                $SUDO sed -i -e 's/^Defaults\tsecure_path.*$//' /etc/sudoers
+            fi
       - save_cache:
           paths:
             - ~/singularity/<< parameters.singularity-version >>
@@ -435,6 +450,10 @@ commands:
             $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/start-suid
             $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/action-suid
             $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/mount-suid
+
+            if [[ -f "/etc/sudoers" ]]; then
+                $SUDO sed -i -e 's/^Defaults\tsecure_path.*$//' /etc/sudoers
+            fi
       - save_cache:
           paths:
             - ~/singularity/<< parameters.singularity-version >>
@@ -532,16 +551,8 @@ jobs:
       - run:
           name: Check install version
           command: |
-            NOSUDO=false
-            which sudo || NOSUDO=true
-            if [[ "$NOSUDO" == "false" ]]; then
-                if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-            fi
             if [ -f "$BASH_ENV" ]; then
                 source $BASH_ENV
-            fi
-            if [[ -f "/etc/sudoers" ]]; then
-                $SUDO sed -i -e 's/^Defaults\tsecure_path.*$//' /etc/sudoers
             fi
             singularity --version
 
@@ -566,16 +577,8 @@ jobs:
       - run:
           name: Check install version
           command: |
-            NOSUDO=false
-            which sudo || NOSUDO=true
-            if [[ "$NOSUDO" == "false" ]]; then
-                if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-            fi
             if [ -f "$BASH_ENV" ]; then
                 source $BASH_ENV
-            fi
-            if [[ -f "/etc/sudoers" ]]; then
-                $SUDO sed -i -e 's/^Defaults\tsecure_path.*$//' /etc/sudoers
             fi
             singularity --version
 

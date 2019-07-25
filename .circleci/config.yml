@@ -43,7 +43,6 @@ jobs:
       - singularity/debian-install-2:
           singularity-version: 2.6.1
 
-
   test-install-debian-3:
     executor: singularity/machine
     steps:

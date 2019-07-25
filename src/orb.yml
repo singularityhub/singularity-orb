@@ -376,9 +376,9 @@ commands:
 
             # CircleCI bug
             if [ -d "/opt/$(whoami)/.pyenv/libexec" ]; then
-                echo "export PATH='${SINGULARITY_PREFIX}/bin:$PATH'" >> "$BASH_ENV"
-            else
                 echo "export PATH='${SINGULARITY_PREFIX}/bin:/opt/$(whoami)/.pyenv/libexec:$PATH'" >> "$BASH_ENV"
+            else
+                echo "export PATH='${SINGULARITY_PREFIX}/bin:$PATH'" >> "$BASH_ENV"
             fi
 
             if [ -f "$BASH_ENV" ]; then

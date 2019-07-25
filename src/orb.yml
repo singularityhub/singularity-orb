@@ -245,7 +245,7 @@ commands:
 
             # Source the version path
             SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
-            echo 'export PATH="${SINGULARITY_PREFIX}/bin:$PATH"' >> "$BASH_ENV"
+            echo "export PATH='${SINGULARITY_PREFIX}/bin:$PATH'" >> "$BASH_ENV"
 
             if [ -f "$BASH_ENV" ]; then
                 source $BASH_ENV

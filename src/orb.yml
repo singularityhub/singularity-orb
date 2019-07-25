@@ -240,17 +240,6 @@ commands:
       - restore_cache:
           keys: v13-dependencies-<< parameters.singularity-version >>
       - run:
-          name: Fix cache permissions for root
-          command: |
-            NOSUDO=false
-            which sudo || NOSUDO=true
-            if [[ "$NOSUDO" == "false" ]]; then
-                if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-            fi
-            SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
-            $SUDO chown -R root:root $HOME/singularity
-            $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/starter-suid
-      - run:
           name: install Singularity 3.*
           command: |
             if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
@@ -287,7 +276,17 @@ commands:
                 make -C builddir && \
                 $SUDO make -C builddir install
             fi
-
+      - run:
+          name: Fix cache permissions for root
+          command: |
+            NOSUDO=false
+            which sudo || NOSUDO=true
+            if [[ "$NOSUDO" == "false" ]]; then
+                if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            fi
+            SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
+            $SUDO chown -R root:root $HOME/singularity
+            $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/starter-suid
       - save_cache:
           paths:
             - ~/singularity/<< parameters.singularity-version >>
@@ -317,17 +316,6 @@ commands:
       - restore_cache:
           keys: v13-dependencies-<< parameters.singularity-version >>
       - run:
-          name: Fix cache permissions for root
-          command: |
-            NOSUDO=false
-            which sudo || NOSUDO=true
-            if [[ "$NOSUDO" == "false" ]]; then
-                if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-            fi
-            SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
-            $SUDO chown -R root:root $HOME/singularity
-            $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/starter-suid
-      - run:
           name: Install Singularity (Version 3.* and up) in the Docker container
           command: |
             if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
@@ -355,7 +343,17 @@ commands:
                 tar -xzvf singularity-<< parameters.singularity-version >>.tar.gz
                 cd singularity && ./mconfig -p "${SINGULARITY_PREFIX}" && make -C builddir && $SUDO make -C builddir install
             fi
-
+      - run:
+          name: Fix cache permissions for root
+          command: |
+            NOSUDO=false
+            which sudo || NOSUDO=true
+            if [[ "$NOSUDO" == "false" ]]; then
+                if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            fi
+            SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
+            $SUDO chown -R root:root $HOME/singularity
+            $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/starter-suid
       - save_cache:
           paths:
             - ~/singularity/<< parameters.singularity-version >>
@@ -383,19 +381,6 @@ commands:
             $SUDO chown -R $(whoami) $HOME/singularity
       - restore_cache:
           keys: v13-dependencies-<< parameters.singularity-version >>
-      - run:
-          name: Fix cache permissions for root
-          command: |
-            NOSUDO=false
-            which sudo || NOSUDO=true
-            if [[ "$NOSUDO" == "false" ]]; then
-                if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-            fi
-            SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
-            $SUDO chown -R root:root $HOME/singularity
-            $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/start-suid
-            $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/action-suid
-            $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/mount-suid
       - run:
           name: Install Singularity (pre GoLang)
           command: |
@@ -437,7 +422,19 @@ commands:
                 tar -xzvf singularity-<< parameters.singularity-version >>.tar.gz
                 cd singularity-<< parameters.singularity-version >> && ./autogen.sh && ./configure --prefix="${SINGULARITY_PREFIX}" && make && $SUDO make install
             fi
-
+      - run:
+          name: Fix cache permissions for root
+          command: |
+            NOSUDO=false
+            which sudo || NOSUDO=true
+            if [[ "$NOSUDO" == "false" ]]; then
+                if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            fi
+            SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
+            $SUDO chown -R root:root $HOME/singularity
+            $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/start-suid
+            $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/action-suid
+            $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/mount-suid
       - save_cache:
           paths:
             - ~/singularity/<< parameters.singularity-version >>

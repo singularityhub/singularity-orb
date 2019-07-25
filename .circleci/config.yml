@@ -28,13 +28,13 @@ jobs:
       - checkout
       - run: circleci orb validate src/orb.yml
 
-
   test-install-alpine-docker-3:
     executor: singularity/alpine-docker
     steps:
       - checkout
       - singularity/alpine-install-3:
           singularity-version: 3.1.0
+          machine-type: docker
 
   test-install-debian-2:
     executor: singularity/machine
@@ -42,7 +42,6 @@ jobs:
       - checkout
       - singularity/debian-install-2:
           singularity-version: 2.6.1
-
 
   test-install-debian-3:
     executor: singularity/machine
@@ -71,6 +70,7 @@ jobs:
           go-version: 1.11.5
       - singularity/alpine-install-3:
           singularity-version: 3.1.0
+          machine-type: docker
       - singularity/build-image-docker:
           from-uri: docker://busybox
           image: busybox.sif
@@ -163,6 +163,6 @@ workflows:
             - test-build-docker-custom-3
             - test-build-custom-2
           filters:
-             branches:
-               only:
-                 - master
+            branches:
+              only:
+                - master

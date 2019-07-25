@@ -13,7 +13,7 @@ that version.
  - 1.0.4: bug above is fixed, and default Singularity for 3.x is 3.2.1.
  - 1.0.5: **do not use** cache added for Singularity (debian bases, not Docker) based on Singularity version, however while the Orb tested to work, in production it breaks Singularity to install to the user home. This version should not be used.
  - 1.0.6: a re-release of 1.0.4, since CircleCI doesn't allow taking versions down unless there is a security reason.
- - 1.0.7: a redo of the cache, this time working to correctly change permissions.
+ - 1.0.7: a redo with cache, this time working to correctly change permissions.
 
 ## Development
 

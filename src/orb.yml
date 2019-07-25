@@ -240,7 +240,7 @@ commands:
 
             # Allows for support for builds that use docker and local (edge case)
             $SUDO chown -R $(whoami) $HOME/singularity
-            $SUDO chown -R $(whoami) /root/singularity            
+            $SUDO chown -R $(whoami) /root/singularity
       - restore_cache:
           keys: v13-dependencies-<< parameters.singularity-version >>
       - run:

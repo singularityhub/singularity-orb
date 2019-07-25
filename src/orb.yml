@@ -286,7 +286,9 @@ commands:
             if [[ "$?" == "0" ]]; then
                 if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
             fi
+            echo "$SUDO mkdir -p $HOME/singularity"
             $SUDO mkdir -p $HOME/singularity
+            echo "$SUDO chown -R $(whoami) $HOME/singularity"
             $SUDO chown -R $(whoami) $HOME/singularity
       - restore_cache:
           keys: v10-dependencies-<< parameters.singularity-version >>
@@ -339,7 +341,9 @@ commands:
             if [[ "$?" == "0" ]]; then
                 if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
             fi
+            echo "$SUDO mkdir -p $HOME/singularity"
             $SUDO mkdir -p $HOME/singularity
+            echo "$SUDO chown -R $(whoami) $HOME/singularity"
             $SUDO chown -R $(whoami) $HOME/singularity
       - restore_cache:
           keys: v10-dependencies-<< parameters.singularity-version >>
@@ -369,6 +373,11 @@ commands:
             SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
             echo "export PATH='${SINGULARITY_PREFIX}/bin:$PATH'" >> "$BASH_ENV"
 
+            # CircleCI bug
+            if [ -d "/opt/$(whoami)/.pyenv/libexec" ]; then
+                echo "export PATH='$PATH:/opt/$(whoami)/.pyenv/libexec'" >> "$BASH_ENV"
+            fi
+ 
             if [ -f "$BASH_ENV" ]; then
                 source $BASH_ENV
             fi

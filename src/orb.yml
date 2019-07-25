@@ -19,10 +19,10 @@ examples:
         singularity: singularity/singularity@1.0.0
 
       workflows:
-          install_alpine_docker_3_example:
-            jobs:
-              - singularity/install_alpine_docker_3:
-                  singularity-version: 3.2.1
+        install_alpine_docker_3_example:
+          jobs:
+            - singularity/install_alpine_docker_3:
+                singularity-version: 3.2.1
 
 
   install_debian_2:
@@ -38,10 +38,10 @@ examples:
         singularity: singularity/singularity@1.0.0
 
       workflows:
-          install_debian_2_example:
-            jobs:
-              - singularity/install_debian_2:
-                  singularity-version: 2.6.1
+        install_debian_2_example:
+          jobs:
+            - singularity/install_debian_2:
+                singularity-version: 2.6.1
 
 
   install_debian_3:
@@ -57,11 +57,11 @@ examples:
         singularity: singularity/singularity@1.0.0
 
       workflows:
-          install_debian_3_example:
-            jobs:
-              - singularity/install_debian_3:
-                  go-version: 1.11.5
-                  singularity-version: 3.2.1
+        install_debian_3_example:
+          jobs:
+            - singularity/install_debian_3:
+                go-version: 1.11.5
+                singularity-version: 3.2.1
 
 
   docker_cli:
@@ -79,10 +79,10 @@ examples:
         singularity: singularity/singularity@1.0.0
 
       workflows:
-          docker_cli_example:
-            jobs:
-              - singularity/docker_cli:
-                  singularity-version: 3.2.1-slim
+        docker_cli_example:
+          jobs:
+            - singularity/docker_cli:
+                singularity-version: 3.2.1-slim
 
 
   build_container_docker_base:
@@ -100,11 +100,11 @@ examples:
         singularity: singularity/singularity@1.0.0
 
       workflows:
-          build_container_docker_base_example:
-            jobs:
-              - singularity/build_container_docker_base:
-                  from-uri: docker://busybox
-                  image: busybox.sif
+        build_container_docker_base_example:
+          jobs:
+            - singularity/build_container_docker_base:
+                from-uri: docker://busybox
+                image: busybox.sif
 
 
   build_container_docker_custom_3:
@@ -119,13 +119,13 @@ examples:
         singularity: singularity/singularity@1.0.0
 
       workflows:
-          build_container_docker_custom_3_example:
-            jobs:
-              - singularity/build_container_docker_custom_3:
-                  singularity-version: 3.2.1
-                  go-version: 1.11.5
-                  from-uri: docker://busybox
-                  image: busybox.sif
+        build_container_docker_custom_3_example:
+          jobs:
+            - singularity/build_container_docker_custom_3:
+                singularity-version: 3.2.1
+                go-version: 1.11.5
+                from-uri: docker://busybox
+                image: busybox.sif
 
 
   build_container_custom_2:
@@ -140,12 +140,12 @@ examples:
         singularity: singularity/singularity@1.0.0
 
       workflows:
-          build_container_custom_2_example:
-            jobs:
-              - singularity/build_container_custom_2:
-                  singularity-version: 2.6.1
-                  from-uri: docker://busybox
-                  image: busybox.sif
+        build_container_custom_2_example:
+          jobs:
+            - singularity/build_container_custom_2:
+                singularity-version: 2.6.1
+                from-uri: docker://busybox
+                image: busybox.sif
 
 
   build_container_custom_3:
@@ -160,15 +160,13 @@ examples:
         singularity: singularity/singularity@1.0.0
 
       workflows:
-          build_container_custom_3_example:
-            jobs:
-              - singularity/build_container_custom_3:
-                  go-version: 1.11.5
-                  singularity-version: 3.2.1
-                  from-uri: docker://busybox
-                  image: busybox.sif
-
-
+        build_container_custom_3_example:
+          jobs:
+            - singularity/build_container_custom_3:
+                go-version: 1.11.5
+                singularity-version: 3.2.1
+                from-uri: docker://busybox
+                image: busybox.sif
 
 
 # EXECUTORS ####################################################################
@@ -227,6 +225,8 @@ commands:
         type: string
         default: "3.2.1"
     steps:
+      - restore_cache:
+          keys: v3-dependencies-<< parameters.singularity-version >>
       - run:
           name: install Singularity 3.*
           command: |
@@ -240,17 +240,36 @@ commands:
                                      libseccomp-dev \
                                      pkg-config
 
-            export GOPATH=/go
-            export PATH=/tmp/go/bin:$PATH
-            go get -u github.com/golang/dep/cmd/dep && \
-            mkdir -p ${GOPATH}/src/github.com/sylabs && \
-            cd ${GOPATH}/src/github.com/sylabs && \
-            wget https://github.com/sylabs/singularity/releases/download/v<< parameters.singularity-version >>/singularity-<< parameters.singularity-version >>.tar.gz && \
-            tar -xzvf singularity-<< parameters.singularity-version >>.tar.gz && \
-            cd singularity && \
-            ./mconfig -p /usr/local && \
-            make -C builddir && \
-            $SUDO make -C builddir install
+            # Create a directory in /opt for Singularity
+            $SUDO mkdir -p $HOME/singularity
+
+            # Source the version path
+            SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
+            echo 'export PATH="${SINGULARITY_PREFIX}/bin:$PATH"' >> "$BASH_ENV"
+
+            if [ -f "$BASH_ENV" ]; then
+                source $BASH_ENV
+            fi
+
+            if [ ! -f "${SINGULARITY_PREFIX}/bin/singularity" ]; then
+                export GOPATH=/go
+                export PATH=/tmp/go/bin:$PATH
+                go get -u github.com/golang/dep/cmd/dep && \
+                mkdir -p ${GOPATH}/src/github.com/sylabs && \
+                cd ${GOPATH}/src/github.com/sylabs && \
+                wget https://github.com/sylabs/singularity/releases/download/v<< parameters.singularity-version >>/singularity-<< parameters.singularity-version >>.tar.gz && \
+                tar -xzvf singularity-<< parameters.singularity-version >>.tar.gz && \
+                cd singularity && \
+                ./mconfig -p "${SINGULARITY_PREFIX}" && \
+                make -C builddir && \
+                $SUDO make -C builddir install
+            fi
+
+      - save_cache:
+          paths:
+            - ~/singularity/<< parameters.singularity-version >>
+          key: v3-dependencies-<< parameters.singularity-version >>
+
 
   alpine-install-3:
     description: |
@@ -261,19 +280,49 @@ commands:
         default: "3.2.1"
     steps:
       - run:
+          name: Fix cache permissions for extraction
+          command: |
+            which sudo
+            if [[ "$?" == "0" ]]; then
+                if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            fi
+            $SUDO mkdir -p $HOME/singularity
+            $SUDO chown -R $(whoami) $HOME/singularity
+      - restore_cache:
+          keys: v3-dependencies-<< parameters.singularity-version >>
+      - run:
           name: Install Singularity (Version 3.* and up) in the Docker container
           command: |
+            if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
             apk update && \
             apk add --virtual automake build-base linux-headers libffi-dev
             apk add --no-cache bash git openssh gcc squashfs-tools sudo libtool gawk
             apk add --no-cache linux-headers build-base openssl-dev util-linux util-linux-dev
             export GOPATH=/go
-            go get -u github.com/golang/dep/cmd/dep
-            mkdir -p ${GOPATH}/src/github.com/sylabs
-            cd ${GOPATH}/src/github.com/sylabs
-            wget https://github.com/sylabs/singularity/releases/download/v<< parameters.singularity-version >>/singularity-<< parameters.singularity-version >>.tar.gz
-            tar -xzvf singularity-<< parameters.singularity-version >>.tar.gz
-            cd singularity && ./mconfig -p /usr/local && make -C builddir && $SUDO make -C builddir install
+
+            # Create a directory in /opt for Singularity
+            $SUDO mkdir -p $HOME/singularity
+
+            # Source the version path
+            SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
+            echo "export PATH='${SINGULARITY_PREFIX}/bin:$PATH'" >> "$BASH_ENV"
+
+            if [ -f "$BASH_ENV" ]; then
+                source $BASH_ENV
+            fi
+
+            if [ ! -f "${SINGULARITY_PREFIX}/bin/singularity" ]; then
+                mkdir -p ${GOPATH}/src/github.com/sylabs
+                cd ${GOPATH}/src/github.com/sylabs
+                wget https://github.com/sylabs/singularity/releases/download/v<< parameters.singularity-version >>/singularity-<< parameters.singularity-version >>.tar.gz
+                tar -xzvf singularity-<< parameters.singularity-version >>.tar.gz
+                cd singularity && ./mconfig -p "${SINGULARITY_PREFIX}" && make -C builddir && $SUDO make -C builddir install
+            fi
+
+      - save_cache:
+          paths:
+            - ~/singularity/<< parameters.singularity-version >>
+          key: v3-dependencies-<< parameters.singularity-version >>
 
 
   debian-install-2:
@@ -283,6 +332,17 @@ commands:
         type: string
         default: "2.6.1"
     steps:
+      - run:
+          name: Fix cache permissions for extraction
+          command: |
+            which sudo
+            if [[ "$?" == "0" ]]; then
+                if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+            fi
+            $SUDO mkdir -p $HOME/singularity
+            $SUDO chown -R $(whoami) $HOME/singularity
+      - restore_cache:
+          keys: v3-dependencies-<< parameters.singularity-version >>
       - run:
           name: Install Singularity (pre GoLang)
           command: |
@@ -301,9 +361,29 @@ commands:
                    uuid-dev \
                    libssl-dev \
                    python3-dev
-            wget https://github.com/sylabs/singularity/releases/download/<< parameters.singularity-version >>/singularity-<< parameters.singularity-version >>.tar.gz
-            tar -xzvf singularity-<< parameters.singularity-version >>.tar.gz
-            cd singularity-<< parameters.singularity-version >> && ./autogen.sh && ./configure --prefix=/usr/local && make && $SUDO make install
+
+            # Create a directory in /opt for Singularity
+            $SUDO mkdir -p $HOME/singularity
+
+            # Source the version path
+            SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
+            echo "export PATH='${SINGULARITY_PREFIX}/bin:$PATH'" >> "$BASH_ENV"
+
+            if [ -f "$BASH_ENV" ]; then
+                source $BASH_ENV
+            fi
+
+            if [ ! -f "${SINGULARITY_PREFIX}/bin/singularity" ]; then
+                wget https://github.com/sylabs/singularity/releases/download/<< parameters.singularity-version >>/singularity-<< parameters.singularity-version >>.tar.gz
+                tar -xzvf singularity-<< parameters.singularity-version >>.tar.gz
+                cd singularity-<< parameters.singularity-version >> && ./autogen.sh && ./configure --prefix="${SINGULARITY_PREFIX}" && make && $SUDO make install
+            fi
+
+      - save_cache:
+          paths:
+            - ~/singularity/<< parameters.singularity-version >>
+          key: v3-dependencies-<< parameters.singularity-version >>
+
 
   build-image:
     description: Build a Singularity container using default (not Docker)
@@ -321,6 +401,9 @@ commands:
           name: Build Singularity Container
           command: |
               if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+              if [ -f "$BASH_ENV" ]; then
+                source $BASH_ENV
+              fi
               $SUDO singularity build <<parameters.image>> <<parameters.from-uri>>
 
   build-image-docker:
@@ -328,7 +411,7 @@ commands:
     parameters:
       singularity-version:
         type: string
-        default: "3.1-slim"
+        default: "v3.2.1-slim"
       from-uri:
         description: The Singularity recipe path or docker:// uri to build from.
         type: string
@@ -341,6 +424,9 @@ commands:
       - run:
           name: Build Singularity Container
           command: |
+              if [ -f "$BASH_ENV" ]; then
+                  source $BASH_ENV
+              fi
               singularity build <<parameters.image>> <<parameters.from-uri>>
 
 
@@ -362,7 +448,13 @@ jobs:
     steps:
       - alpine-install-3:
           singularity-version: <<parameters.singularity-version>>
-      - run: singularity --version
+      - run:
+          name: Check install version
+          command: |
+            if [ -f "$BASH_ENV" ]; then
+                source $BASH_ENV
+            fi
+            singularity --version
 
   install_debian_2:
     description: |
@@ -377,7 +469,13 @@ jobs:
     steps:
       - debian-install-2:
           singularity-version: <<parameters.singularity-version>>
-      - run: singularity --version
+      - run:
+          name: Check install version
+          command: |
+            if [ -f "$BASH_ENV" ]; then
+                source $BASH_ENV
+            fi
+            singularity --version
 
   install_debian_3:
     description: |
@@ -397,7 +495,13 @@ jobs:
           go-version: <<parameters.go-version>>
       - debian-install-3:
           singularity-version: <<parameters.singularity-version>>
-      - run: singularity --version
+      - run:
+          name: Check install version
+          command: |
+            if [ -f "$BASH_ENV" ]; then
+                source $BASH_ENV
+            fi
+            singularity --version
 
   docker_cli:
     description: |
@@ -409,7 +513,7 @@ jobs:
       singularity-version:
         description: The Singularity version (tag on Docker Hub singularityware/singularity)
         type: string
-        default: 3.1-slim
+        default: v3.2.1-slim
     steps:
       - run:
           name: Check Singularity Version

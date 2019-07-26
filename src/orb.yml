@@ -256,6 +256,7 @@ install_singularity_3: &install_singularity_3
     if [ -z "$GOPATH" ]; then export GOPATH=/go; fi
     if [ ! -f "${SINGULARITY_PREFIX}/bin/singularity" ]; then
       mkdir -p ${GOPATH}/src/github.com/sylabs
+      go get -u github.com/golang/dep/cmd/dep
       cd ${GOPATH}/src/github.com/sylabs
       wget https://github.com/sylabs/singularity/releases/download/v<< parameters.singularity-version >>/singularity-<< parameters.singularity-version >>.tar.gz
       tar -xzvf singularity-<< parameters.singularity-version >>.tar.gz

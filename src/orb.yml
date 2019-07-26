@@ -388,7 +388,7 @@ commands:
                    python3-dev
             $SUDO mkdir -p $HOME/singularity
             SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
-            if [ -d "/opt/$(whoami)/.pyenv/libexec" ]; then # CircleCI Bug
+            if [ -d "/opt/$(whoami)/.pyenv/libexec" ]; then
                 echo "export PATH='${SINGULARITY_PREFIX}/bin:/opt/$(whoami)/.pyenv/libexec:$PATH'" >> "$BASH_ENV"
             else; echo "export PATH='${SINGULARITY_PREFIX}/bin:$PATH'" >> "$BASH_ENV"; fi
             if [ -f "$BASH_ENV" ]; then source $BASH_ENV; fi

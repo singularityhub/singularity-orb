@@ -255,6 +255,7 @@ install_singularity_3: &install_singularity_3
     if [ -f "$BASH_ENV" ]; then source $BASH_ENV; fi
     echo $PATH
     if [ -z "$GOPATH" ]; then export GOPATH=/go; fi
+    if [ -d "/tmp/go/bin" ]; then export PATH=/tmp/go/bin:$PATH; fi
     if [ ! -f "${SINGULARITY_PREFIX}/bin/singularity" ]; then
       mkdir -p ${GOPATH}/src/github.com/sylabs
       go get -u github.com/golang/dep/cmd/dep

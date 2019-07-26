@@ -240,7 +240,6 @@ fix_singularity_permissions_2: &fix_singularity_permissions_2
     $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/start-suid
     $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/action-suid
     $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/mount-suid
-
     if [[ -f "/etc/sudoers" ]]; then
       $SUDO sed -i -e 's/^Defaults\tsecure_path.*$//' /etc/sudoers
     fi
@@ -254,8 +253,8 @@ install_singularity_3: &install_singularity_3
     # Source the version path
     SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
     echo "export PATH='${SINGULARITY_PREFIX}/bin:$PATH'" >> "$BASH_ENV"
-    if [ -f "$BASH_ENV" ]; then; source $BASH_ENV; fi
-    if [ -z "$GOPATH" ]; then; export GOPATH=/go; fi
+    if [ -f "$BASH_ENV" ]; then source $BASH_ENV; fi
+    if [ -z "$GOPATH" ]; then export GOPATH=/go; fi
     if [ ! -f "${SINGULARITY_PREFIX}/bin/singularity" ]; then
       mkdir -p ${GOPATH}/src/github.com/sylabs
       cd ${GOPATH}/src/github.com/sylabs
@@ -290,8 +289,10 @@ commands:
                 $SUDO chmod -R 7777 /go
             which go
             export GOPATH=/go
-            echo "export PATH='/tmp/go/bin:$PATH'" >> "$BASH_ENV"
-            echo "export GOPATH='/go'" >> "$BASH_ENV"
+            if [ -f "$BASH_ENV" ]; then
+              echo "export PATH='/tmp/go/bin:$PATH'" >> "$BASH_ENV"
+              echo "export GOPATH='/go'" >> "$BASH_ENV"
+            fi
 
   debian-install-3:
     description: Install Singularity 3.* on Debian
@@ -390,7 +391,7 @@ commands:
             if [ -d "/opt/$(whoami)/.pyenv/libexec" ]; then # CircleCI Bug
                 echo "export PATH='${SINGULARITY_PREFIX}/bin:/opt/$(whoami)/.pyenv/libexec:$PATH'" >> "$BASH_ENV"
             else; echo "export PATH='${SINGULARITY_PREFIX}/bin:$PATH'" >> "$BASH_ENV"; fi
-            if [ -f "$BASH_ENV" ]; then; source $BASH_ENV; fi
+            if [ -f "$BASH_ENV" ]; then source $BASH_ENV; fi
             if [ ! -f "${SINGULARITY_PREFIX}/bin/singularity" ]; then
                 wget https://github.com/sylabs/singularity/releases/download/<< parameters.singularity-version >>/singularity-<< parameters.singularity-version >>.tar.gz
                 tar -xzvf singularity-<< parameters.singularity-version >>.tar.gz
@@ -423,9 +424,7 @@ commands:
             if [[ "$NOSUDO" == "false" ]]; then
                 if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
             fi
-            if [ -f "$BASH_ENV" ]; then
-              source $BASH_ENV
-            fi
+            if [ -f "$BASH_ENV" ]; then source $BASH_ENV; fi
             $SUDO singularity build <<parameters.image>> <<parameters.from-uri>>
 
   build-image-docker:
@@ -446,9 +445,7 @@ commands:
       - run:
           name: Build Singularity Container
           command: |
-            if [ -f "$BASH_ENV" ]; then
-                source $BASH_ENV
-            fi
+            if [ -f "$BASH_ENV" ]; then source $BASH_ENV; fi
             singularity build <<parameters.image>> <<parameters.from-uri>>
 
 
@@ -476,9 +473,7 @@ jobs:
       - run:
           name: Check install version
           command: |
-            if [ -f "$BASH_ENV" ]; then
-                source $BASH_ENV
-            fi
+            if [ -f "$BASH_ENV" ]; then source $BASH_ENV; fi
             singularity --version
 
   install_debian_2:
@@ -501,9 +496,7 @@ jobs:
       - run:
           name: Check install version
           command: |
-            if [ -f "$BASH_ENV" ]; then
-                source $BASH_ENV
-            fi
+            if [ -f "$BASH_ENV" ]; then source $BASH_ENV; fi
             singularity --version
 
   install_debian_3:
@@ -531,9 +524,7 @@ jobs:
       - run:
           name: Check install version
           command: |
-            if [ -f "$BASH_ENV" ]; then
-                source $BASH_ENV
-            fi
+            if [ -f "$BASH_ENV" ]; then source $BASH_ENV; fi
             singularity --version
 
   docker_cli:

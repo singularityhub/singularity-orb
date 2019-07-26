@@ -193,6 +193,79 @@ executors:
     docker:
       - image: singularityware/singularity:<< parameters.singularity-version >>
 
+
+# Functions ###################################################################
+# These are functions shared between commands
+
+
+fix_cache_permissions: &fix_cache_permissions
+  name: Fix cache permissions for extraction
+  command: |
+    NOSUDO=false
+    which sudo || NOSUDO=true
+    if [[ "$NOSUDO" == "false" ]]; then
+        if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+    fi
+    echo "$SUDO mkdir -p $HOME/singularity"
+    $SUDO mkdir -p $HOME/singularity /root/singularity
+    echo "$SUDO chown -R $(whoami) $HOME/singularity"
+    $SUDO chown -R $(whoami) $HOME/singularity
+
+
+fix_singularity_permissions: &fix_singularity_permissions
+  name: Fix permissions on extracted Singularity
+  command: |
+    NOSUDO=false
+    which sudo || NOSUDO=true
+    if [[ "$NOSUDO" == "false" ]]; then
+      if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+    fi
+    SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
+    $SUDO chown -R root:root $HOME/singularity
+    $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/starter-suid
+    if [[ -f "/etc/sudoers" ]]; then
+      $SUDO sed -i -e 's/^Defaults\tsecure_path.*$//' /etc/sudoers
+    fi
+
+fix_singularity_permissions_2: &fix_singularity_permissions_2
+  name: Fix permissions on extracted Singularity
+  command: |
+    NOSUDO=false
+    which sudo || NOSUDO=true
+    if [[ "$NOSUDO" == "false" ]]; then
+      if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+    fi
+    SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
+    $SUDO chown -R root:root $HOME/singularity
+    $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/start-suid
+    $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/action-suid
+    $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/mount-suid
+    if [[ -f "/etc/sudoers" ]]; then
+      $SUDO sed -i -e 's/^Defaults\tsecure_path.*$//' /etc/sudoers
+    fi
+
+install_singularity_3: &install_singularity_3
+  name: Install Singularity (Version 3.* and up)
+  command: |
+    if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
+    # Create a directory in home for Singularity
+    $SUDO mkdir -p $HOME/singularity
+    SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
+    echo "export PATH='${SINGULARITY_PREFIX}/bin:$PATH'" >> "$BASH_ENV"
+    if [ -f "$BASH_ENV" ]; then source $BASH_ENV; fi
+    echo $PATH
+    export GOPATH=/go
+    if [ -d "/tmp/go/bin" ]; then export PATH=/tmp/go/bin:$PATH; fi
+    if [ ! -f "${SINGULARITY_PREFIX}/bin/singularity" ]; then
+      mkdir -p ${GOPATH}/src/github.com/sylabs
+      go get -u github.com/golang/dep/cmd/dep
+      cd ${GOPATH}/src/github.com/sylabs
+      wget https://github.com/sylabs/singularity/releases/download/v<< parameters.singularity-version >>/singularity-<< parameters.singularity-version >>.tar.gz
+      tar -xzvf singularity-<< parameters.singularity-version >>.tar.gz
+      cd singularity && ./mconfig -p "${SINGULARITY_PREFIX}" && make -C builddir && $SUDO make -C builddir install
+    fi
+
+
 # COMMANDS ####################################################################
 # These are commands that can be given as steps to jobs
 commands:
@@ -218,6 +291,10 @@ commands:
                 $SUDO chmod -R 7777 /go
             which go
             export GOPATH=/go
+            if [ -f "$BASH_ENV" ]; then
+              echo "export PATH='/tmp/go/bin:$PATH'" >> "$BASH_ENV"
+              echo "export GOPATH='/go'" >> "$BASH_ENV"
+            fi
 
   debian-install-3:
     description: Install Singularity 3.* on Debian
@@ -229,23 +306,11 @@ commands:
         type: string
         default: "machine"
     steps:
-      - run:
-          name: Fix cache permissions for extraction
-          command: |
-            NOSUDO=false
-            which sudo || NOSUDO=true
-            if [[ "$NOSUDO" == "false" ]]; then
-                if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-            fi
-
-            echo "$SUDO mkdir -p $HOME/singularity"
-            $SUDO mkdir -p $HOME/singularity /root/singularity
-            echo "$SUDO chown -R $(whoami) $HOME/singularity"
-            $SUDO chown -R $(whoami) $HOME/singularity
+      - run: *fix_cache_permissions
       - restore_cache:
-          keys: v2-dependencies-<< parameters.machine-type >>-<< parameters.singularity-version >>
+          keys: v3-dependencies-<< parameters.machine-type >>-<< parameters.singularity-version >>
       - run:
-          name: install Singularity 3.*
+          name: install Singularity 3.* Debian Dependencies
           command: |
             if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
             $SUDO apt-get install -y build-essential \
@@ -256,51 +321,12 @@ commands:
                                      libgpgme11-dev \
                                      libseccomp-dev \
                                      pkg-config
-
-            # Create a directory in /opt for Singularity
-            $SUDO mkdir -p $HOME/singularity
-
-            # Source the version path
-            SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
-            echo "export PATH='${SINGULARITY_PREFIX}/bin:$PATH'" >> "$BASH_ENV"
-
-            if [ -f "$BASH_ENV" ]; then
-                source $BASH_ENV
-            fi
-
-            if [ ! -f "${SINGULARITY_PREFIX}/bin/singularity" ]; then
-                export GOPATH=/go
-                export PATH=/tmp/go/bin:$PATH
-                go get -u github.com/golang/dep/cmd/dep && \
-                mkdir -p ${GOPATH}/src/github.com/sylabs && \
-                cd ${GOPATH}/src/github.com/sylabs && \
-                wget https://github.com/sylabs/singularity/releases/download/v<< parameters.singularity-version >>/singularity-<< parameters.singularity-version >>.tar.gz && \
-                tar -xzvf singularity-<< parameters.singularity-version >>.tar.gz && \
-                cd singularity && \
-                ./mconfig -p "${SINGULARITY_PREFIX}" && \
-                make -C builddir && \
-                $SUDO make -C builddir install
-            fi
-      - run:
-          name: Fix cache permissions for root
-          command: |
-            NOSUDO=false
-            which sudo || NOSUDO=true
-            if [[ "$NOSUDO" == "false" ]]; then
-                if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-            fi
-
-            SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
-            $SUDO chown -R root:root $HOME/singularity
-            $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/starter-suid
-
-            if [[ -f "/etc/sudoers" ]]; then
-                $SUDO sed -i -e 's/^Defaults\tsecure_path.*$//' /etc/sudoers
-            fi
+      - run: *install_singularity_3
+      - run: *fix_singularity_permissions
       - save_cache:
           paths:
             - ~/singularity/<< parameters.singularity-version >>
-          key: v2-dependencies-<< parameters.machine-type >>-<< parameters.singularity-version >>
+          key: v3-dependencies-<< parameters.machine-type >>-<< parameters.singularity-version >>
 
 
   alpine-install-3:
@@ -314,63 +340,22 @@ commands:
         type: string
         default: "machine"
     steps:
-      - run:
-          name: Fix cache permissions for extraction
-          command: |
-            NOSUDO=false
-            which sudo || NOSUDO=true
-            if [[ "$NOSUDO" == "false" ]]; then
-                if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-            fi
-            echo "$SUDO mkdir -p $HOME/singularity"
-            $SUDO mkdir -p $HOME/singularity
-            echo "$SUDO chown -R $(whoami) $HOME/singularity"
-            $SUDO chown -R $(whoami) $HOME/singularity
+      - run: *fix_cache_permissions
       - restore_cache:
-          keys: v2-dependencies-<< parameters.machine-type >>-<< parameters.singularity-version >>
+          keys: v3-dependencies-<< parameters.machine-type >>-<< parameters.singularity-version >>
       - run:
-          name: Install Singularity (Version 3.* and up) in the Docker container
+          name: Install Singularity (Version 3.* and up) Alpine Dependencies
           command: |
-            if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
             apk update && \
             apk add --virtual automake build-base linux-headers libffi-dev
             apk add --no-cache bash git openssh gcc squashfs-tools sudo libtool gawk
             apk add --no-cache linux-headers build-base openssl-dev util-linux util-linux-dev
-            export GOPATH=/go
-
-            # Create a directory in /opt for Singularity
-            $SUDO mkdir -p $HOME/singularity
-
-            # Source the version path
-            SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
-            echo "export PATH='${SINGULARITY_PREFIX}/bin:$PATH'" >> "$BASH_ENV"
-
-            if [ -f "$BASH_ENV" ]; then
-                source $BASH_ENV
-            fi
-
-            if [ ! -f "${SINGULARITY_PREFIX}/bin/singularity" ]; then
-                mkdir -p ${GOPATH}/src/github.com/sylabs
-                cd ${GOPATH}/src/github.com/sylabs
-                wget https://github.com/sylabs/singularity/releases/download/v<< parameters.singularity-version >>/singularity-<< parameters.singularity-version >>.tar.gz
-                tar -xzvf singularity-<< parameters.singularity-version >>.tar.gz
-                cd singularity && ./mconfig -p "${SINGULARITY_PREFIX}" && make -C builddir && $SUDO make -C builddir install
-            fi
-      - run:
-          name: Fix cache permissions for root
-          command: |
-            NOSUDO=false
-            which sudo || NOSUDO=true
-            if [[ "$NOSUDO" == "false" ]]; then
-                if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-            fi
-            SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
-            $SUDO chown -R root:root $HOME/singularity
-            $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/starter-suid
+      - run: *install_singularity_3
+      - run: *fix_singularity_permissions
       - save_cache:
           paths:
             - ~/singularity/<< parameters.singularity-version >>
-          key: v2-dependencies-<< parameters.machine-type >>-<< parameters.singularity-version >>
+          key: v3-dependencies-<< parameters.machine-type >>-<< parameters.singularity-version >>
 
 
   debian-install-2:
@@ -383,24 +368,12 @@ commands:
         type: string
         default: "machine"
     steps:
-      - run:
-          name: Fix cache permissions for extraction
-          command: |
-            NOSUDO=false
-            which sudo || NOSUDO=true
-            if [[ "$NOSUDO" == "false" ]]; then
-                if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-            fi
-            echo "$SUDO mkdir -p $HOME/singularity"
-            $SUDO mkdir -p $HOME/singularity
-            echo "$SUDO chown -R $(whoami) $HOME/singularity"
-            $SUDO chown -R $(whoami) $HOME/singularity
+      - run: *fix_cache_permissions
       - restore_cache:
-          keys: v2-dependencies-<< parameters.machine-type >>-<< parameters.singularity-version >>
+          keys: v3-dependencies-<< parameters.machine-type >>-<< parameters.singularity-version >>
       - run:
           name: Install Singularity (pre GoLang)
           command: |
-            # The trick below is taken from circleci/gcp-cli, thanks!
             if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
             $SUDO apt-get update && $SUDO apt-get -y install git \
                    build-essential \
@@ -415,50 +388,23 @@ commands:
                    uuid-dev \
                    libssl-dev \
                    python3-dev
-
-            # Create a directory in /opt for Singularity
             $SUDO mkdir -p $HOME/singularity
-
-            # Source the version path
             SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
-
-            # CircleCI bug
             if [ -d "/opt/$(whoami)/.pyenv/libexec" ]; then
                 echo "export PATH='${SINGULARITY_PREFIX}/bin:/opt/$(whoami)/.pyenv/libexec:$PATH'" >> "$BASH_ENV"
-            else
-                echo "export PATH='${SINGULARITY_PREFIX}/bin:$PATH'" >> "$BASH_ENV"
-            fi
-
-            if [ -f "$BASH_ENV" ]; then
-                source $BASH_ENV
-            fi
-
+            else echo "export PATH='${SINGULARITY_PREFIX}/bin:$PATH'" >> "$BASH_ENV"; fi
+            if [ -f "$BASH_ENV" ]; then source $BASH_ENV; fi
             if [ ! -f "${SINGULARITY_PREFIX}/bin/singularity" ]; then
                 wget https://github.com/sylabs/singularity/releases/download/<< parameters.singularity-version >>/singularity-<< parameters.singularity-version >>.tar.gz
                 tar -xzvf singularity-<< parameters.singularity-version >>.tar.gz
                 cd singularity-<< parameters.singularity-version >> && ./autogen.sh && ./configure --prefix="${SINGULARITY_PREFIX}" && make && $SUDO make install
             fi
-      - run:
-          name: Fix cache permissions for root
-          command: |
-            NOSUDO=false
-            which sudo || NOSUDO=true
-            if [[ "$NOSUDO" == "false" ]]; then
-                if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-            fi
-            SINGULARITY_PREFIX="$HOME/singularity/<< parameters.singularity-version >>"
-            $SUDO chown -R root:root $HOME/singularity
-            $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/start-suid
-            $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/action-suid
-            $SUDO chmod 4755 ${SINGULARITY_PREFIX}/libexec/singularity/bin/mount-suid
 
-            if [[ -f "/etc/sudoers" ]]; then
-                $SUDO sed -i -e 's/^Defaults\tsecure_path.*$//' /etc/sudoers
-            fi
+      - run: *fix_singularity_permissions_2
       - save_cache:
           paths:
             - ~/singularity/<< parameters.singularity-version >>
-          key: v2-dependencies-<< parameters.machine-type >>-<< parameters.singularity-version >>
+          key: v3-dependencies-<< parameters.machine-type >>-<< parameters.singularity-version >>
 
   build-image:
     description: Build a Singularity container using default (not Docker)
@@ -480,9 +426,7 @@ commands:
             if [[ "$NOSUDO" == "false" ]]; then
                 if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
             fi
-            if [ -f "$BASH_ENV" ]; then
-              source $BASH_ENV
-            fi
+            if [ -f "$BASH_ENV" ]; then source $BASH_ENV; fi
             $SUDO singularity build <<parameters.image>> <<parameters.from-uri>>
 
   build-image-docker:
@@ -503,9 +447,7 @@ commands:
       - run:
           name: Build Singularity Container
           command: |
-            if [ -f "$BASH_ENV" ]; then
-                source $BASH_ENV
-            fi
+            if [ -f "$BASH_ENV" ]; then source $BASH_ENV; fi
             singularity build <<parameters.image>> <<parameters.from-uri>>
 
 
@@ -533,9 +475,7 @@ jobs:
       - run:
           name: Check install version
           command: |
-            if [ -f "$BASH_ENV" ]; then
-                source $BASH_ENV
-            fi
+            if [ -f "$BASH_ENV" ]; then source $BASH_ENV; fi
             singularity --version
 
   install_debian_2:
@@ -558,9 +498,7 @@ jobs:
       - run:
           name: Check install version
           command: |
-            if [ -f "$BASH_ENV" ]; then
-                source $BASH_ENV
-            fi
+            if [ -f "$BASH_ENV" ]; then source $BASH_ENV; fi
             singularity --version
 
   install_debian_3:
@@ -588,9 +526,7 @@ jobs:
       - run:
           name: Check install version
           command: |
-            if [ -f "$BASH_ENV" ]; then
-                source $BASH_ENV
-            fi
+            if [ -f "$BASH_ENV" ]; then source $BASH_ENV; fi
             singularity --version
 
   docker_cli:
@@ -618,7 +554,7 @@ jobs:
         This job supports any version of Singularity, and the version maps
         to the tag of singularityware/singularity on Docker Hub.
     executor: docker
-    parameters:
+    parameters: &docker_build_params
       from-uri:
         description: The Singularity recipe path or docker:// uri to build from.
         type: string
@@ -630,7 +566,6 @@ jobs:
       machine-type:
         type: string
         default: docker
-
     steps:
       - build-image-docker:
           from-uri: <<parameters.from-uri>>
@@ -642,14 +577,7 @@ jobs:
         a custom version of GoLang and Singularity in the 3.* family.
     executor: alpine-docker
     parameters:
-      from-uri:
-        description: The Singularity recipe path or docker:// uri to build from.
-        type: string
-        default: Singularity
-      image:
-        description: The image binary to build (e.g., container.sif)
-        type: string
-        default: container.sif
+      <<: *docker_build_params
       go-version:
         type: string
         default: "1.11.5"
@@ -657,9 +585,6 @@ jobs:
         description: The Singularity version
         type: string
         default: 3.2.1
-      machine-type:
-        type: string
-        default: docker
     steps:
       - install-go:
           go-version: <<parameters.go-version>>
@@ -675,7 +600,7 @@ jobs:
         Build a Singularity 2.* Container on a debian (machine) base. This means
         that we install Singularity from source
     executor: machine
-    parameters:
+    parameters: &machine_build_params
       from-uri:
         description: The Singularity recipe path or docker:// uri to build from.
         type: string
@@ -704,23 +629,13 @@ jobs:
       option will give you the most freedom to use the container after building.
     executor: machine
     parameters:
-      from-uri:
-        description: The Singularity recipe path or docker:// uri to build from.
-        type: string
-        default: Singularity
-      image:
-        description: The image binary to build (e.g., container.sif)
-        type: string
-        default: container.sif
+      <<: *machine_build_params
       go-version:
         type: string
         default: "1.11.5"
       singularity-version:
         type: string
         default: "3.2.1"
-      machine-type:
-        type: string
-        default: "machine"
     steps:
       - install-go:
           go-version: <<parameters.go-version>>

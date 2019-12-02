@@ -22,7 +22,7 @@ examples:
         install_alpine_docker_3_example:
           jobs:
             - singularity/install_alpine_docker_3:
-                singularity-version: 3.2.1
+                singularity-version: 3.5.0
                 machine-type: docker
 
   install_debian_2:
@@ -61,14 +61,14 @@ examples:
           jobs:
             - singularity/install_debian_3:
                 go-version: 1.11.5
-                singularity-version: 3.2.1
+                singularity-version: 3.5.0
 
 
   docker_cli:
     description: |
        Interact with Singularity via a Docker container. The containers are
        prebuilt, so this step supports any of the tags belonging to the
-       singularityware/singularity Docker repository. The first job should
+       quay.io/singularity/singularity Docker repository. The first job should
        set the machine exceutor to the container, and you can continue with
        steps after that.
 
@@ -82,7 +82,7 @@ examples:
         docker_cli_example:
           jobs:
             - singularity/docker_cli:
-                singularity-version: 3.2.1-slim
+                singularity-version: 3.5.0-slim
 
 
   build_container_docker_base:
@@ -91,7 +91,7 @@ examples:
         the fastest build option because the container is prebuilt, but functionality
         (interaction with the container) after is limited for the same reason.
         This job supports any version of Singularity, and the version maps
-        to the tag of singularityware/singularity on Docker Hub.
+        to the tag of quay.io/singularity/singularity.
 
     usage:
       version: 2.1
@@ -123,7 +123,7 @@ examples:
           jobs:
             - singularity/build_container_docker_custom_3:
                 machine-type: docker
-                singularity-version: 3.2.1
+                singularity-version: 3.5.0
                 go-version: 1.11.5
                 from-uri: docker://busybox
                 image: busybox.sif
@@ -165,7 +165,7 @@ examples:
           jobs:
             - singularity/build_container_custom_3:
                 go-version: 1.11.5
-                singularity-version: 3.2.1
+                singularity-version: 3.5.0
                 from-uri: docker://busybox
                 image: busybox.sif
 
@@ -189,9 +189,9 @@ executors:
     parameters:
       singularity-version:
         type: string
-        default: "3.2.1-slim"
+        default: "3.5.0-slim"
     docker:
-      - image: singularityware/singularity:<< parameters.singularity-version >>
+      - image: quay.io/singularity/singularity:<< parameters.singularity-version >>
 
 
 # Functions ###################################################################
@@ -301,7 +301,7 @@ commands:
     parameters:
       singularity-version:
         type: string
-        default: "3.2.1"
+        default: "3.5.0"
       machine-type:
         type: string
         default: "machine"
@@ -313,14 +313,17 @@ commands:
           name: install Singularity 3.* Debian Dependencies
           command: |
             if [[ $EUID == 0 ]]; then export SUDO=""; else export SUDO="sudo"; fi
-            $SUDO apt-get install -y build-essential \
+            $SUDO apt-get update && $SUDO apt-get install -y build-essential \
                                      squashfs-tools \
                                      libtool \
                                      uuid-dev \
                                      libssl-dev \
                                      libgpgme11-dev \
                                      libseccomp-dev \
-                                     pkg-config
+                                     pkg-config \
+                                     wget \
+                                     cryptsetup-bin
+
       - run: *install_singularity_3
       - run: *fix_singularity_permissions
       - save_cache:
@@ -335,7 +338,7 @@ commands:
     parameters:
       singularity-version:
         type: string
-        default: "3.2.1"
+        default: "3.5.0"
       machine-type:
         type: string
         default: "machine"
@@ -348,8 +351,8 @@ commands:
           command: |
             apk update && \
             apk add --virtual automake build-base linux-headers libffi-dev
-            apk add --no-cache bash git openssh gcc squashfs-tools sudo libtool gawk
-            apk add --no-cache linux-headers build-base openssl-dev util-linux util-linux-dev
+            apk add --no-cache bash git openssh gcc squashfs-tools sudo libtool gawk cryptsetup
+            apk add --no-cache linux-headers build-base openssl-dev util-linux util-linux-dev shadow-uidmap
       - run: *install_singularity_3
       - run: *fix_singularity_permissions
       - save_cache:
@@ -434,7 +437,7 @@ commands:
     parameters:
       singularity-version:
         type: string
-        default: "v3.2.1-slim"
+        default: "v3.5.0-slim"
       from-uri:
         description: The Singularity recipe path or docker:// uri to build from.
         type: string
@@ -465,7 +468,7 @@ jobs:
     parameters:
       singularity-version:
         type: string
-        default: "3.2.1"
+        default: "3.5.0"
       machine-type:
         type: string
         default: "docker"
@@ -510,7 +513,7 @@ jobs:
     parameters:
       singularity-version:
         type: string
-        default: "3.2.1"
+        default: "3.5.0"
       go-version:
         type: string
         default: "1.11.5"
@@ -533,13 +536,13 @@ jobs:
     description: |
        Interact with Singularity via a Docker container. The containers are
        prebuilt, so this step supports any of the tags belonging to the
-       singularityware/singularity Docker repository.
+       quay.io/singularity/singularity Docker repository.
     executor: docker
     parameters:
       singularity-version:
-        description: The Singularity version (tag on Docker Hub singularityware/singularity)
+        description: The Singularity version (tag on quay.io/singularity/singularity)
         type: string
-        default: v3.2.1-slim
+        default: v3.5.0-slim
     steps:
       - run:
           name: Check Singularity Version
@@ -552,7 +555,7 @@ jobs:
         the fastest build option because the container is prebuilt, but functionality
         (interaction with the container) after is limited for the same reason.
         This job supports any version of Singularity, and the version maps
-        to the tag of singularityware/singularity on Docker Hub.
+        to the tag of quay.io/singularity/singularity.
     executor: docker
     parameters: &docker_build_params
       from-uri:
@@ -584,7 +587,7 @@ jobs:
       singularity-version:
         description: The Singularity version
         type: string
-        default: 3.2.1
+        default: 3.5.0
     steps:
       - install-go:
           go-version: <<parameters.go-version>>
@@ -635,7 +638,7 @@ jobs:
         default: "1.11.5"
       singularity-version:
         type: string
-        default: "3.2.1"
+        default: "3.5.0"
     steps:
       - install-go:
           go-version: <<parameters.go-version>>

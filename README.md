@@ -15,6 +15,7 @@ that version.
  - 1.0.6: a re-release of 1.0.4, since CircleCI doesn't allow taking versions down unless there is a security reason.
  - 1.0.7: a redo with cache, this time working to correctly change permissions.
  - 1.0.8: no change in functionality, src/orb.yml cleaned up to reduce redundancy.
+ - 1.0.9: updates to support Singularity 3.5, default install to 3.5.0
 
 ## Development
 

@@ -60,7 +60,7 @@ examples:
         install_debian_3_example:
           jobs:
             - singularity/install_debian_3:
-                go-version: 1.11.5
+                go-version: 1.13
                 singularity-version: 3.5.0
 
 
@@ -124,7 +124,7 @@ examples:
             - singularity/build_container_docker_custom_3:
                 machine-type: docker
                 singularity-version: 3.5.0
-                go-version: 1.11.5
+                go-version: 1.13
                 from-uri: docker://busybox
                 image: busybox.sif
 
@@ -164,7 +164,7 @@ examples:
         build_container_custom_3_example:
           jobs:
             - singularity/build_container_custom_3:
-                go-version: 1.11.5
+                go-version: 1.13
                 singularity-version: 3.5.0
                 from-uri: docker://busybox
                 image: busybox.sif
@@ -276,7 +276,7 @@ commands:
     parameters:
       go-version:
         type: string
-        default: "1.11.5"
+        default: "1.13"
     steps:
       - run:
           name: Install GoLang
@@ -516,7 +516,7 @@ jobs:
         default: "3.5.0"
       go-version:
         type: string
-        default: "1.11.5"
+        default: "1.13"
       machine-type:
         type: string
         default: "machine"
@@ -583,7 +583,7 @@ jobs:
       <<: *docker_build_params
       go-version:
         type: string
-        default: "1.11.5"
+        default: "1.13"
       singularity-version:
         description: The Singularity version
         type: string
@@ -635,7 +635,7 @@ jobs:
       <<: *machine_build_params
       go-version:
         type: string
-        default: "1.11.5"
+        default: "1.13"
       singularity-version:
         type: string
         default: "3.5.0"

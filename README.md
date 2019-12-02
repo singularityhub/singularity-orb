@@ -15,6 +15,7 @@ that version.
  - 1.0.6: a re-release of 1.0.4, since CircleCI doesn't allow taking versions down unless there is a security reason.
  - 1.0.7: a redo with cache, this time working to correctly change permissions.
  - 1.0.8: no change in functionality, src/orb.yml cleaned up to reduce redundancy.
+ - 1.0.9: updates to support Singularity 3.5, default install to 3.5.0
 
 ## Development
 
@@ -53,8 +54,7 @@ recommended).
 
 For the fastest build, you can use a pre-built Docker container. Since the
 dependencies are inside the container, you can specify any version of Singularity.
-The version coincides with a Docker tag of [singularityware/singularity](https://hub.docker.com/r/singularityware/singularity/tags)
-on Docker Hub.
+Versions 1.8 and below coincide with a Docker tag of [singularityware/singularity](https://hub.docker.com/r/singularityware/singularity/tags) on Docker Hub, while later versions use [singularity/singularity](https://quay.io/repository/singularity/singularity) on Quay.io.
 
 ```yaml
 version: 2.1

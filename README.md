@@ -16,7 +16,7 @@ that version.
  - 1.0.7: a redo with cache, this time working to correctly change permissions.
  - 1.0.8: no change in functionality, src/orb.yml cleaned up to reduce redundancy.
  - 1.0.9: updates to support Singularity 3.5, default install to 3.5.0
- - 1.10.0: go-version default should be string
+ - 1.0.10: go-version default should be string
 
 
 ## Development
@@ -114,7 +114,7 @@ workflows:
   build_container_custom_3_example:
   jobs:
     - singularity/build_container_custom_3:
-        go-version: 1.13
+        go-version: "1.13"
         singularity-version: 3.5.0
         from-uri: docker://busybox
         image: busybox.sif
@@ -137,7 +137,7 @@ workflows:
   jobs:
     - singularity/build_container_docker_custom_3:
         singularity-version: 3.5.0
-        go-version: 1.13
+        go-version: "1.13"
         from-uri: docker://busybox
         image: busybox.sif
 ```
@@ -180,7 +180,7 @@ workflows:
   install_debian_3_example:
     jobs:
       - singularity/install_debian_3:
-        go-version: 1.13
+        go-version: "1.13"
         singularity-version: 3.5.0
 ```
 

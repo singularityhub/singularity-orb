@@ -16,6 +16,8 @@ that version.
  - 1.0.7: a redo with cache, this time working to correctly change permissions.
  - 1.0.8: no change in functionality, src/orb.yml cleaned up to reduce redundancy.
  - 1.0.9: updates to support Singularity 3.5, default install to 3.5.0
+ - 1.10.0: go-version default should be string
+
 
 ## Development
 
@@ -112,8 +114,8 @@ workflows:
   build_container_custom_3_example:
   jobs:
     - singularity/build_container_custom_3:
-        go-version: 1.11.5
-        singularity-version: 3.2.1
+        go-version: 1.13
+        singularity-version: 3.5.0
         from-uri: docker://busybox
         image: busybox.sif
 ```
@@ -134,8 +136,8 @@ workflows:
   build_container_docker_custom_3_example:
   jobs:
     - singularity/build_container_docker_custom_3:
-        singularity-version: 3.2.1
-        go-version: 1.11.5
+        singularity-version: 3.5.0
+        go-version: 1.13
         from-uri: docker://busybox
         image: busybox.sif
 ```
@@ -178,8 +180,8 @@ workflows:
   install_debian_3_example:
     jobs:
       - singularity/install_debian_3:
-        go-version: 11.1.5
-        singularity-version: 3.2.1
+        go-version: 1.13
+        singularity-version: 3.5.0
 ```
 
 #### Install Docker, Singularity 3.*
@@ -197,7 +199,7 @@ orbs:
     install_alpine_docker_3_example:
       jobs:
         - singularity/install_alpine_docker_3:
-            singularity-version: 3.2.1
+            singularity-version: 3.5.0
 ```
 
 
@@ -217,7 +219,7 @@ orbs:
     docker_cli_example:
       jobs:
         - singularity/docker_cli:
-            singularity-version: 3.2.1-slim
+            singularity-version: v3.5.0-slim
 ```
 
 I don't have any good examples of using the above yet, please contribute yours if you do!

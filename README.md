@@ -54,8 +54,7 @@ recommended).
 
 For the fastest build, you can use a pre-built Docker container. Since the
 dependencies are inside the container, you can specify any version of Singularity.
-The version coincides with a Docker tag of [singularityware/singularity](https://hub.docker.com/r/singularityware/singularity/tags)
-on Docker Hub.
+Versions 1.8 and below coincide with a Docker tag of [singularityware/singularity](https://hub.docker.com/r/singularityware/singularity/tags) on Docker Hub, while later versions use [singularity/singularity](https://quay.io/repository/singularity/singularity) on Quay.io.
 
 ```yaml
 version: 2.1

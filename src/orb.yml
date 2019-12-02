@@ -82,7 +82,7 @@ examples:
         docker_cli_example:
           jobs:
             - singularity/docker_cli:
-                singularity-version: 3.5.0-slim
+                singularity-version: v3.5.0-slim
 
 
   build_container_docker_base:
@@ -189,7 +189,7 @@ executors:
     parameters:
       singularity-version:
         type: string
-        default: "3.5.0-slim"
+        default: "v3.5.0-slim"
     docker:
       - image: quay.io/singularity/singularity:<< parameters.singularity-version >>
 

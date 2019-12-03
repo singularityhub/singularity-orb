@@ -60,7 +60,7 @@ examples:
         install_debian_3_example:
           jobs:
             - singularity/install_debian_3:
-                go-version: 1.13
+                go-version: "1.13"
                 singularity-version: 3.5.0
 
 
@@ -124,7 +124,7 @@ examples:
             - singularity/build_container_docker_custom_3:
                 machine-type: docker
                 singularity-version: 3.5.0
-                go-version: 1.13
+                go-version: "1.13"
                 from-uri: docker://busybox
                 image: busybox.sif
 
@@ -164,7 +164,7 @@ examples:
         build_container_custom_3_example:
           jobs:
             - singularity/build_container_custom_3:
-                go-version: 1.13
+                go-version: "1.13"
                 singularity-version: 3.5.0
                 from-uri: docker://busybox
                 image: busybox.sif

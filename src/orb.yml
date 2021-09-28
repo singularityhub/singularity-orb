@@ -140,10 +140,9 @@ executors:
 
     description: A debian-based machine executor.
   alpine-docker:
-    description: >
-      An alpine, go-lang base image that can have a custom Singularity install
+    description: An alpine, go-lang base image that can have a custom Singularity install
     docker:
-      - image: iron/go:dev
+      - image: golang:1.16.6-alpine
   docker:
     description: Pre-build Docker container base to interact with Singularity
     parameters:
@@ -276,8 +275,7 @@ commands:
 
 
   alpine-install-3:
-    description: |
-      Install a custom version of Singularity with apk
+    description: Install a custom version of Singularity with apk
     parameters:
       singularity-version:
         type: string
@@ -362,7 +360,7 @@ jobs:
     parameters:
       singularity-version:
         type: string
-        default: "3.8.2"
+        default: "3.8.3"
       machine-type:
         type: string
         default: "docker"

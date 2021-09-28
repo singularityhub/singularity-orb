@@ -36,21 +36,14 @@ jobs:
           singularity-version: 3.1.0
           machine-type: docker
 
-  test-install-debian-2:
-    executor: singularity/machine
-    steps:
-      - checkout
-      - singularity/debian-install-2:
-          singularity-version: 2.6.1
-
   test-install-debian-3:
     executor: singularity/machine
     steps:
       - checkout
       - singularity/install-go:
-          go-version: 1.11.5
+          go-version: 1.17.1
       - singularity/debian-install-3:
-          singularity-version: 3.1.0
+          singularity-version: 3.8.3
 
 
   test-build-docker-base:
@@ -58,7 +51,7 @@ jobs:
     steps:
       - checkout
       - singularity/build-image-docker:
-          singularity-version: 3.1-slim
+          singularity-version: 3.8.3-slim
           image: busybox.sif
           from-uri: docker://busybox
 
@@ -67,20 +60,10 @@ jobs:
     steps:
       - checkout
       - singularity/install-go:
-          go-version: 1.11.5
+          go-version: 1.17.1
       - singularity/alpine-install-3:
-          singularity-version: 3.1.0
+          singularity-version: 3.8.3
           machine-type: docker
-      - singularity/build-image-docker:
-          from-uri: docker://busybox
-          image: busybox.sif
-
-  test-build-custom-2:
-    executor: singularity/machine
-    steps:
-      - checkout
-      - singularity/debian-install-2:
-          singularity-version: 2.6.1
       - singularity/build-image-docker:
           from-uri: docker://busybox
           image: busybox.sif
@@ -125,10 +108,6 @@ workflows:
           requires:
             - validate
 
-      - test-install-debian-2:
-          requires:
-            - validate
-
       - test-install-debian-3:
           requires:
             - validate
@@ -141,27 +120,19 @@ workflows:
           requires:
             - validate
 
-      - test-build-custom-2:
-          requires:
-            - validate
-
       - publish-dev:
           requires:
             - test-install-alpine-docker-3
-            - test-install-debian-2
             - test-install-debian-3
             - test-build-docker-base
             - test-build-docker-custom-3
-            - test-build-custom-2
 
       - publish:
           requires:
             - test-install-alpine-docker-3
-            - test-install-debian-2
             - test-install-debian-3
             - test-build-docker-base
             - test-build-docker-custom-3
-            - test-build-custom-2
           filters:
             branches:
               only:

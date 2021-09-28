@@ -121,6 +121,42 @@ workflows:
         image: busybox.sif
 ```
 
+### Debian base with control of machine
+
+The below workflow shows controlling the machine executor.
+
+```yaml
+  install_debian_3_manual:
+    description: |
+      Install Singularity 3.* on a debian base, with control over the executor. 
+
+    usage:
+      version: 2.1
+
+      orbs:
+        singularity: singularity/singularity@1.0.0
+
+      executors:
+        ubuntu-machine:
+          machine:
+            image: ubuntu-2004:202107-02
+
+      workflows:
+        install_debian_3_example:
+          jobs:
+            - install_debian_3_example_manual:
+
+      jobs:
+        install_debian_3_example_manual:
+        executor: "ubuntu-machine"
+        working_directory: ~/repo
+        steps:
+          - checkout
+          - singularity/install-go
+          - singularity/debian-install-3:
+              singularity-version: 3.8.3
+              go-version: "1.17.1"
+```
 
 #### Docker Base with Custom (Singularity 3) Version
 

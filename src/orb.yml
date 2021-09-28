@@ -177,16 +177,14 @@ executors:
   machine:
     machine:
       image: ubuntu-2004:202107-02
-    description: >
-      A debian-based machine executor.
+    description: A debian-based machine executor.
   alpine-docker:
     description: >
       An alpine, go-lang base image that can have a custom Singularity install
     docker:
       - image: iron/go:dev
   docker:
-    description: >
-      Pre-build Docker container base to interact with Singularity
+    description: Pre-build Docker container base to interact with Singularity
     parameters:
       singularity-version:
         type: string
@@ -318,10 +316,11 @@ commands:
                                      libtool \
                                      uuid-dev \
                                      libssl-dev \
-                                     libgpgme11-dev \
                                      libseccomp-dev \
+                                     libgpgme11-dev \
                                      pkg-config \
                                      wget \
+                                     gperf \
                                      cryptsetup-bin
 
       - run: *install_singularity_3

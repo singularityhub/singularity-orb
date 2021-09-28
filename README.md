@@ -1,7 +1,7 @@
 # Singularity Orb
 
 This is the [Circle CI Orb](https://circleci.com/orbs/registry/) to help you 
-interact with [Singularity containers](https://www.github.com/sylabs/singularity).
+interact with [Singularity containers](https://github.com/sylabs/singularity).
 Please see the [published orb](https://circleci.com/orbs/registry/orb/singularity/singularity)
 to get the latest version, or look into the
 [VERSION](VERSION) file here. The documentation will state 1.0.0 but we are beyond
@@ -9,14 +9,15 @@ that version.
 
 ## Versions
 
- - 1.0.3: coincides with Singularity 3.1.0 and 2.6.1 as default. There is a bug with the singularity-version variable so it doesn't change from 3.1.0.
- - 1.0.4: bug above is fixed, and default Singularity for 3.x is 3.2.1.
- - 1.0.5: **do not use** cache added for Singularity (debian bases, not Docker) based on Singularity version, however while the Orb tested to work, in production it breaks Singularity to install to the user home. This version should not be used.
- - 1.0.6: a re-release of 1.0.4, since CircleCI doesn't allow taking versions down unless there is a security reason.
- - 1.0.7: a redo with cache, this time working to correctly change permissions.
- - 1.0.8: no change in functionality, src/orb.yml cleaned up to reduce redundancy.
- - 1.0.9: updates to support Singularity 3.5, default install to 3.5.0
+ - 1.0.11: bump to Singularity 3.8.2, Go to 1.17.1, and machine
  - 1.0.10: go-version default should be string
+ - 1.0.9: updates to support Singularity 3.5, default install to 3.5.0
+ - 1.0.8: no change in functionality, src/orb.yml cleaned up to reduce redundancy.
+ - 1.0.7: a redo with cache, this time working to correctly change permissions.
+ - 1.0.6: a re-release of 1.0.4, since CircleCI doesn't allow taking versions down unless there is a security reason.
+ - 1.0.5: **do not use** cache added for Singularity (debian bases, not Docker) based on Singularity version, however while the Orb tested to work, in production it breaks Singularity to install to the user home. This version should not be used.
+ - 1.0.4: bug above is fixed, and default Singularity for 3.x is 3.2.1.
+ - 1.0.3: coincides with Singularity 3.1.0 and 2.6.1 as default. There is a bug with the singularity-version variable so it doesn't change from 3.1.0.
 
 
 ## Development
@@ -120,6 +121,42 @@ workflows:
         image: busybox.sif
 ```
 
+### Debian base with control of machine
+
+The below workflow shows controlling the machine executor.
+
+```yaml
+  install_debian_3_manual:
+    description: |
+      Install Singularity 3.* on a debian base, with control over the executor. 
+
+    usage:
+      version: 2.1
+
+      orbs:
+        singularity: singularity/singularity@1.0.0
+
+      executors:
+        ubuntu-machine:
+          machine:
+            image: ubuntu-2004:202107-02
+
+      workflows:
+        install_debian_3_example:
+          jobs:
+            - install_debian_3_example_manual:
+
+      jobs:
+        install_debian_3_example_manual:
+        executor: "ubuntu-machine"
+        working_directory: ~/repo
+        steps:
+          - checkout
+          - singularity/install-go
+          - singularity/debian-install-3:
+              singularity-version: 3.8.3
+              go-version: "1.17.1"
+```
 
 #### Docker Base with Custom (Singularity 3) Version
 

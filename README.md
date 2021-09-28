@@ -1,7 +1,7 @@
 # Singularity Orb
 
 This is the [Circle CI Orb](https://circleci.com/orbs/registry/) to help you 
-interact with [Singularity containers](https://www.github.com/sylabs/singularity).
+interact with [Singularity containers](https://github.com/sylabs/singularity).
 Please see the [published orb](https://circleci.com/orbs/registry/orb/singularity/singularity)
 to get the latest version, or look into the
 [VERSION](VERSION) file here. The documentation will state 1.0.0 but we are beyond
@@ -9,7 +9,7 @@ that version.
 
 ## Versions
 
- - 1.0.11: bump to Singularity 3.8.2
+ - 1.0.11: bump to Singularity 3.8.2, Go to 1.17.1, and machine
  - 1.0.10: go-version default should be string
  - 1.0.9: updates to support Singularity 3.5, default install to 3.5.0
  - 1.0.8: no change in functionality, src/orb.yml cleaned up to reduce redundancy.

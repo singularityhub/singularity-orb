@@ -55,19 +55,6 @@ jobs:
           image: busybox.sif
           from-uri: docker://busybox
 
-  test-build-docker-custom-3:
-    executor: singularity/alpine-docker
-    steps:
-      - checkout
-      - singularity/install-go:
-          go-version: 1.17.1
-      - singularity/alpine-install-3:
-          singularity-version: 3.8.3
-          machine-type: docker
-      - singularity/build-image-docker:
-          from-uri: docker://busybox
-          image: busybox.sif
-
   publish-dev:
     executor: cli
     steps:
@@ -116,23 +103,17 @@ workflows:
           requires:
             - validate
 
-      - test-build-docker-custom-3:
-          requires:
-            - validate
-
       - publish-dev:
           requires:
             - test-install-alpine-docker-3
             - test-install-debian-3
             - test-build-docker-base
-            - test-build-docker-custom-3
 
       - publish:
           requires:
             - test-install-alpine-docker-3
             - test-install-debian-3
             - test-build-docker-base
-            - test-build-docker-custom-3
           filters:
             branches:
               only:

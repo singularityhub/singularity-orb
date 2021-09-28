@@ -88,48 +88,6 @@ examples:
                 image: busybox.sif
 
 
-  build_container_docker_custom_3:
-    description: |
-        Build a Singularity Container using an alpine Docker base, and install
-        a custom version of GoLang and Singularity in the 3.* family.
-
-    usage:
-      version: 2.1
-
-      orbs:
-        singularity: singularity/singularity@1.0.0
-
-      workflows:
-        build_container_docker_custom_3_example:
-          jobs:
-            - singularity/build_container_docker_custom_3:
-                machine-type: docker
-                singularity-version: 3.8.2
-                go-version: "1.17.1"
-                from-uri: docker://busybox
-                image: busybox.sif
-
-  build_container_custom_3:
-    description: |
-      Build a Singularity Container version 3.* base on a debian base. This
-      option will give you the most freedom to use the container after building.
-
-    usage:
-      version: 2.1
-
-      orbs:
-        singularity: singularity/singularity@1.0.0
-
-      workflows:
-        build_container_custom_3_example:
-          jobs:
-            - singularity/build_container_custom_3:
-                go-version: "1.17.1"
-                singularity-version: 3.8.2
-                from-uri: docker://busybox
-                image: busybox.sif
-
-
 # EXECUTORS ####################################################################
 # These are executors, the backend bases to run on
 
@@ -440,62 +398,5 @@ jobs:
         default: docker
     steps:
       - build-image-docker:
-          from-uri: <<parameters.from-uri>>
-          image: <<parameters.image>>
-
-  build_container_docker_custom_3:
-    description: |
-        Build a Singularity Container using an alpine Docker base, and install
-        a custom version of GoLang and Singularity in the 3.* family.
-    executor: alpine-docker
-    parameters:
-      <<: *docker_build_params
-      go-version:
-        type: string
-        default: "1.17.1"
-      singularity-version:
-        description: The Singularity version
-        type: string
-        default: 3.8.2
-    steps:
-      - install-go:
-          go-version: <<parameters.go-version>>
-      - alpine-install-3:
-          singularity-version: <<parameters.singularity-version>>
-          machine-type: <<parameters.machine-type>>
-      - build-image:
-          from-uri: <<parameters.from-uri>>
-          image: <<parameters.image>>
-
-  build_container_custom_3:
-    description: |
-      Build a Singularity Container version 3.* base on a debian base. This
-      option will give you the most freedom to use the container after building.
-    executor: machine
-    parameters:
-      from-uri:
-        description: The Singularity recipe path or docker:// uri to build from.
-        type: string
-        default: Singularity
-      image:
-        description: The image binary to build (e.g., container.sif)
-        type: string
-        default: container.sif
-      machine-type:
-        type: string
-        default: "machine"
-      go-version:
-        type: string
-        default: "1.17.1"
-      singularity-version:
-        type: string
-        default: "3.8.2"
-    steps:
-      - install-go:
-          go-version: <<parameters.go-version>>
-      - debian-install-3:
-          singularity-version: <<parameters.singularity-version>>
-          machine-type: <<parameters.machine-type>>
-      - build-image:
           from-uri: <<parameters.from-uri>>
           image: <<parameters.image>>

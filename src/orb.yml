@@ -22,7 +22,7 @@ examples:
         install_alpine_docker_3_example:
           jobs:
             - singularity/install_alpine_docker_3:
-                singularity-version: 3.5.0
+                singularity-version: 3.8.2
                 machine-type: docker
 
   install_debian_2:
@@ -60,8 +60,8 @@ examples:
         install_debian_3_example:
           jobs:
             - singularity/install_debian_3:
-                go-version: "1.13"
-                singularity-version: 3.5.0
+                go-version: "1.17.1"
+                singularity-version: 3.8.2
 
 
   docker_cli:
@@ -82,7 +82,7 @@ examples:
         docker_cli_example:
           jobs:
             - singularity/docker_cli:
-                singularity-version: v3.5.0-slim
+                singularity-version: v3.8.2-slim
 
 
   build_container_docker_base:
@@ -123,8 +123,8 @@ examples:
           jobs:
             - singularity/build_container_docker_custom_3:
                 machine-type: docker
-                singularity-version: 3.5.0
-                go-version: "1.13"
+                singularity-version: 3.8.2
+                go-version: "1.17.1"
                 from-uri: docker://busybox
                 image: busybox.sif
 
@@ -164,8 +164,8 @@ examples:
         build_container_custom_3_example:
           jobs:
             - singularity/build_container_custom_3:
-                go-version: "1.13"
-                singularity-version: 3.5.0
+                go-version: "1.17.1"
+                singularity-version: 3.8.2
                 from-uri: docker://busybox
                 image: busybox.sif
 
@@ -175,9 +175,10 @@ examples:
 
 executors:
   machine:
+    machine:
+      image: ubuntu-2004:202107-02
     description: >
       A debian-based machine executor.
-    machine: true
   alpine-docker:
     description: >
       An alpine, go-lang base image that can have a custom Singularity install
@@ -189,7 +190,7 @@ executors:
     parameters:
       singularity-version:
         type: string
-        default: "v3.5.0-slim"
+        default: "v3.8.2-slim"
     docker:
       - image: quay.io/singularity/singularity:<< parameters.singularity-version >>
 
@@ -258,11 +259,10 @@ install_singularity_3: &install_singularity_3
     if [ -d "/tmp/go/bin" ]; then export PATH=/tmp/go/bin:$PATH; fi
     if [ ! -f "${SINGULARITY_PREFIX}/bin/singularity" ]; then
       mkdir -p ${GOPATH}/src/github.com/sylabs
-      go get -u github.com/golang/dep/cmd/dep
       cd ${GOPATH}/src/github.com/sylabs
-      wget https://github.com/sylabs/singularity/releases/download/v<< parameters.singularity-version >>/singularity-<< parameters.singularity-version >>.tar.gz
-      tar -xzvf singularity-<< parameters.singularity-version >>.tar.gz
-      cd singularity && ./mconfig -p "${SINGULARITY_PREFIX}" && make -C builddir && $SUDO make -C builddir install
+      wget https://github.com/sylabs/singularity/releases/download/v<< parameters.singularity-version >>/singularity-ce-<< parameters.singularity-version >>.tar.gz
+      tar -xzvf singularity-ce-<< parameters.singularity-version >>.tar.gz
+      cd singularity-ce-<< parameters.singularity-version >> && ./mconfig -p "${SINGULARITY_PREFIX}" && make -C builddir && $SUDO make -C builddir install
     fi
 
 
@@ -276,7 +276,7 @@ commands:
     parameters:
       go-version:
         type: string
-        default: "1.13"
+        default: "1.17.1"
     steps:
       - run:
           name: Install GoLang
@@ -301,7 +301,7 @@ commands:
     parameters:
       singularity-version:
         type: string
-        default: "3.5.0"
+        default: "3.8.2"
       machine-type:
         type: string
         default: "machine"
@@ -338,7 +338,7 @@ commands:
     parameters:
       singularity-version:
         type: string
-        default: "3.5.0"
+        default: "3.8.2"
       machine-type:
         type: string
         default: "machine"
@@ -437,7 +437,7 @@ commands:
     parameters:
       singularity-version:
         type: string
-        default: "v3.5.0-slim"
+        default: "v3.8.2-slim"
       from-uri:
         description: The Singularity recipe path or docker:// uri to build from.
         type: string
@@ -468,7 +468,7 @@ jobs:
     parameters:
       singularity-version:
         type: string
-        default: "3.5.0"
+        default: "3.8.2"
       machine-type:
         type: string
         default: "docker"
@@ -513,10 +513,10 @@ jobs:
     parameters:
       singularity-version:
         type: string
-        default: "3.5.0"
+        default: "3.8.2"
       go-version:
         type: string
-        default: "1.13"
+        default: "1.17.1"
       machine-type:
         type: string
         default: "machine"
@@ -542,7 +542,7 @@ jobs:
       singularity-version:
         description: The Singularity version (tag on quay.io/singularity/singularity)
         type: string
-        default: v3.5.0-slim
+        default: v3.8.2-slim
     steps:
       - run:
           name: Check Singularity Version
@@ -583,11 +583,11 @@ jobs:
       <<: *docker_build_params
       go-version:
         type: string
-        default: "1.13"
+        default: "1.17.1"
       singularity-version:
         description: The Singularity version
         type: string
-        default: 3.5.0
+        default: 3.8.2
     steps:
       - install-go:
           go-version: <<parameters.go-version>>
@@ -635,10 +635,10 @@ jobs:
       <<: *machine_build_params
       go-version:
         type: string
-        default: "1.13"
+        default: "1.17.1"
       singularity-version:
         type: string
-        default: "3.5.0"
+        default: "3.8.2"
     steps:
       - install-go:
           go-version: <<parameters.go-version>>

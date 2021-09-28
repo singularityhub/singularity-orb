@@ -9,14 +9,15 @@ that version.
 
 ## Versions
 
- - 1.0.3: coincides with Singularity 3.1.0 and 2.6.1 as default. There is a bug with the singularity-version variable so it doesn't change from 3.1.0.
- - 1.0.4: bug above is fixed, and default Singularity for 3.x is 3.2.1.
- - 1.0.5: **do not use** cache added for Singularity (debian bases, not Docker) based on Singularity version, however while the Orb tested to work, in production it breaks Singularity to install to the user home. This version should not be used.
- - 1.0.6: a re-release of 1.0.4, since CircleCI doesn't allow taking versions down unless there is a security reason.
- - 1.0.7: a redo with cache, this time working to correctly change permissions.
- - 1.0.8: no change in functionality, src/orb.yml cleaned up to reduce redundancy.
- - 1.0.9: updates to support Singularity 3.5, default install to 3.5.0
+ - 1.0.11: bump to Singularity 3.8.2
  - 1.0.10: go-version default should be string
+ - 1.0.9: updates to support Singularity 3.5, default install to 3.5.0
+ - 1.0.8: no change in functionality, src/orb.yml cleaned up to reduce redundancy.
+ - 1.0.7: a redo with cache, this time working to correctly change permissions.
+ - 1.0.6: a re-release of 1.0.4, since CircleCI doesn't allow taking versions down unless there is a security reason.
+ - 1.0.5: **do not use** cache added for Singularity (debian bases, not Docker) based on Singularity version, however while the Orb tested to work, in production it breaks Singularity to install to the user home. This version should not be used.
+ - 1.0.4: bug above is fixed, and default Singularity for 3.x is 3.2.1.
+ - 1.0.3: coincides with Singularity 3.1.0 and 2.6.1 as default. There is a bug with the singularity-version variable so it doesn't change from 3.1.0.
 
 
 ## Development
